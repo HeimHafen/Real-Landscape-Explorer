@@ -1,48 +1,58 @@
-# REAL LANDSCAPE EXPLORER – V2: Geologischer Realismus
+# REAL LANDSCAPE EXPLORER – WEISSE WAND V1
 
-## Was es ist
+Eine **begehbare 3D-Welt**, die aus der vom Nutzer bereitgestellten Sketchfab-GLB **„Weisse Wand Mountain peek 2517 m 8257 ft“** von **Shahriar Shahrabi** erstellt wurde.
 
-**Komplett neues V2-Landschaftsupdate auf Basis von V1.** Die alte, zusammenhängende 3,6 × 3,6 km Vulkanlandschaft ist erhalten geblieben, ebenso die Touch-/WASD-Steuerung und die frei bewegliche Kamera. Neue Materialzonen und über 5.000 geologisch gruppierte Felsobjekte verbessern die Nah- und Fernwirkung.
+## Was wirklich im Projekt steckt
 
-**Ehrliche Einordnung:** Die Geländeform ist weiterhin **fiktiv**. Dies ist **kein** 1:1-Laserscan/Fotogrammetrie-Modell von Island. Eine reale Maßstabseinheit entspricht zwar einem Meter, aber geografisch entspricht es keinem realen Ort.
-
-## Was neu ist
-
-- 4 Materialebenen: lokale (nicht CDN-abhängige) geologische Farbkarte, echter fotografischer Fels, fotografisches Geröll/Asche und fotografische Normalkarte.
-- Steilhänge werden mit triplanar projizierten Fotos strukturiert (keine gestreckte Textur an Hängen).
-- Aufgelockerte Lava- und mineralische Zonen, feinere Nahoberflächen, trockenes Geröll, spärliche graugrüne Verwitterungszonen.
-- **5.149** unterschiedliche Felsen in unregelmäßigen Ablagerungsfächern, davon 1.050 zusätzlich um den neuen Startbereich, plus breite Ausläufer und vereinzelte größere Felsformationen.
-- Angenehmere Lichtbalance, gedämpfter Dunst, neutralere Wolken und höhere Detailwirkung aus Augenhöhe.
-- Adaptive ECO-Umschaltung nach fünf Sekunden unter 30 FPS. Per Button auch manuell umschaltbar.
-- Kamera startet näher an einer geologisch interessanteren Flanke und blickt in die Kraterlandschaft.
-- `index.html` ist weiterhin ein eigenständig startbares Browser-Spiel mit **vollständig eingebettetem GLB-Modell**, ohne zusätzliche Verzeichnisse und ohne JavaScript-CDN.
-
-## Paket
-
-- `index.html`: **einzige nötige Datei**, vollständig, für direkten Upload ins GitHub-Repository-Root
-- `assets/landscape.glb`: getrennte editierbare GLB-Datei für spätere Asset-Entwicklung
-- `assets/model-info.json`: Dreieckszahlen, Modellinformation, Herkunft
-- `source/`: Modularversion für Software-Entwicklung (beim eigenen Build `modular-index.html` als `index.html` verwenden und `app.js`, `style.css`, `assets/` gemeinsam hochladen)
-
-## GitHub / Working Copy
-
-1. **V1-Repository behalten**: `Real-Landscape-Explorer`.
-2. `index.html` aus V2 im Stammverzeichnis **überschreiben**, optional `README.md`.
-3. Working Copy Commit → `refs/heads/main` Push, **Force Push aus**.
-4. `https://heimhafen.github.io/Real-Landscape-Explorer/?v=2` öffnen.
-5. Wenn Safari noch V1 zeigt: einmal neu laden, gegebenenfalls Website-Daten/Cache löschen.
+- Die tatsächlich vorhandenen und in den Spielraum transformierten **442.766 3D-Dreiecke** des fotografischen Geländemodells (keine neu erfundene Ersatzlandschaft).
+- Originale Fototextur, für die Grafikschalter in 1K, 2K und 4K aufbereitet. Standard: 2K für Smartphones.
+- Gesonderte, **aus den Geländedreiecken berechnete** Kollisionshöhenkarte mit 1024 × 1024 Messpunkten sowie Abdeckungsmaske für modellierte Flächen. Kollisionen an steilen Hängen oder unvollständigen Scans sind **eine Annäherung**, keine vollständige Physiksimulation.
+- First-Person-Bewegung, WASD, iPhone-Joystick, Umsehen, Laufen und Aussicht-/Flugmodus.
+- Keine externen Bibliotheken oder CDN-Texturen nötig. Benötigt WebGL 2.
 
 ## Wichtige Grenzen
 
-- Kein garantierter Fotorealismus/AAA-Niveau; die Modelloberfläche verwendet verbesserte fotografische 2D-Materialien, aber keine echte Terrain-Fotogrammetrie.
-- Ein Safari-Test auf dem physischen iPhone wurde aus dieser Umgebung **nicht durchgeführt**; WebGL2-Shader sind syntaktisch vorbereitet, aber die Bildrate kann je nach Hardware stark abweichen.
-- Das eigenständige `index.html` ist groß, weil das gesamte GLB als Base64 eingebettet ist. Bei Ladeproblemen kann die modulare Variante genutzt werden (eigenständiges `assets/landscape.glb`).
-- Grosse 3D-Felsformationen sind nur näherungsweise kollidierend; die Terrainkollision verwendet die echte gerenderte Höhenfläche.
+- Der exportierte Sketchfab-Scan ist nicht eindeutig in Vermessungsmetern kalibriert. **Die Spiellandschaft wurde näherungsweise auf eine größte horizontale Ausdehnung von 2,2 km skaliert.** Das ist keine verifizierte 1:1-Georeferenzierung. Die im Spiel angezeigte „Modellhöhe“ ist **keine reale Höhe über dem Meeresspiegel**.
+- Aufnahmen aus der Luft wirken aus der Nähe naturgemäß oft weniger detailreich. Für überzeugende Bodenperspektiven wären zusätzliche Bodenscans nötig.
+- Für den Export unvollständig erfasste Geländeabschnitte sind gesperrt; auch sehr steile Klippen sind nicht überall begehbar.
+- iPhone-Safari wurde mit diesem Paket **nicht** live getestet. JavaScript-Syntax, GLB-Konvertierung, Dateiformat, Kollisionsdaten und ZIP-Integrität wurden geprüft. Die tatsächliche Bildrate muss auf dem Gerät ermittelt werden.
 
-## Fototexturen und Rechte
+## In dein bestehendes GitHub-Repository hochladen
 
-Die fotobasierten Stein- und Normal-Texturen stammen aus den bereits im V1-Projekt verwendeten CC0-Fotomaterialien. Hier wurden sie farblich angepasst und ins GLB eingebettet. Kein fremdes Kartenbild wurde ohne Lizenz übernommen.
+1. Diese ZIP vollständig entpacken.
+2. In `Real-Landscape-Explorer` im Branch `main` die neue `index.html`, `README.md`, `CREDITS.md` und den kompletten Ordner `assets/` in das **Stammverzeichnis** hochladen. Gleichnamige Dateien ersetzen.
+3. Vergewissern, dass Dateien **exakt** so liegen:
 
-## Ausblick
+```
+Real-Landscape-Explorer/
+├── index.html
+├── README.md
+├── CREDITS.md
+├── terrain-overview.png
+└── assets/
+    ├── terrain.bin
+    ├── height.bin
+    ├── coverage.bin
+    ├── meta.json
+    ├── weisse-wand-1k.jpg
+    ├── weisse-wand-2k.jpg
+    └── weisse-wand-4k.jpg
+```
 
-Für noch deutlich höheren Realismus brauchen wir als nächstes eine kleine Fokuszone mit **hochaufgelösten photogrammetrischen 3D-Scans oder realen amtlichen Geländedaten**, dazu korrekte natürliche Oberflächen und geprüfte mobile Performance, statt immer mehr generierte Fernlandschaft.
+4. Commit und Push auf `refs/heads/main` (kein Force Push).
+5. GitHub → Settings → Pages → `Deploy from a branch` → `main` und `/(root)`.
+6. Laden: `https://heimhafen.github.io/Real-Landscape-Explorer/?v=weisse-wand-1`.
+
+Die alten, nicht mehr verwendeten V1-/V2-Dateien können nach erfolgreichem Funktionstest entfernt werden.
+
+**Wichtig:** Nur `index.html` hochzuladen reicht diesmal **nicht** – das tatsächliche 3D-Modell liegt im `assets`-Ordner. Die Startseite zeigt im Fehlerfall eine Meldung mit der Ursache.
+
+## Steuerung
+
+- iPhone: Joystick links, rechts auf der Landschaft wischen; Schaltflächen `AUSSICHT`, `LAUFEN`, `GRAFIK`, `START`.
+- Computer: WASD, Mauswischen, Shift schneller, V Aussicht/Wandern, R Start. Im Aussichtflug: Leertaste aufwärts und X abwärts.
+- Die Landschaft lässt sich ohne Account und ohne laufende Datenverbindung nach einmaligem Herunterladen vom GitHub-Server darstellen, wenn sie lokal vorliegt; GitHub Pages selbst benötigt natürlich eine Verbindung zum Laden der Dateien.
+
+## Lizenz und Attribution
+
+Siehe `CREDITS.md`. Der Ursprungsscan ist unter **Creative Commons Attribution 4.0** lizenziert, weshalb bei Verwendung der Urheber und die Quelle angegeben werden müssen. Die gelieferte Version verändert die Speicherung, Skalierung und Texturauflösung des Originals.
