@@ -1,0 +1,10 @@
+{
+  "identity": "fictional Iceland-inspired terrain, not a verified scan",
+  "sizeMeters": 3600.0,
+  "grid": 385,
+  "terrainTriangles": 294912,
+  "rockTriangles": 206285,
+  "stones": 5149,
+  "textures": 4,
+  "photoSource": "CC0 stone photo source, carried forward from V1"
+}

@@ -1,0 +1,117 @@
+[
+  {
+    "id": "forest",
+    "bounds": [
+      [
+        -16.7487,
+        -0.5898,
+        -2.4395
+      ],
+      [
+        16.9091,
+        12.4494,
+        20.9615
+      ]
+    ],
+    "source": {
+      "author": "dasy444 (https://sketchfab.com/dasy444)",
+      "license": "SKETCHFAB Standard (https://sketchfab.com/licenses)",
+      "source": "https://sketchfab.com/3d-models/the-landscape-is-a-forest-in-the-mountains-27b7e06431f244ef84e28bada7560c98",
+      "title": "The landscape is a forest in the mountains"
+    },
+    "trianglesOriginal": 19419,
+    "trianglesOptimized": 19419
+  },
+  {
+    "id": "grass",
+    "bounds": [
+      [
+        -0.2933,
+        -0.1914,
+        -0.6569
+      ],
+      [
+        3.455,
+        0.5539,
+        2.1028
+      ]
+    ],
+    "source": {
+      "author": "3dhdscan (https://sketchfab.com/3dhdscan)",
+      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "source": "https://sketchfab.com/3d-models/simple-grass-chunks-eb4f6dc9d4e3455ea3435385faf58b60",
+      "title": "Simple grass chunks"
+    },
+    "trianglesOriginal": 77966,
+    "trianglesOptimized": 77966
+  },
+  {
+    "id": "rocks",
+    "bounds": [
+      [
+        -51.0644,
+        -0.0,
+        -41.3404
+      ],
+      [
+        63.4031,
+        25.5554,
+        64.6621
+      ]
+    ],
+    "source": {
+      "author": "holger.buss (https://sketchfab.com/holger.buss)",
+      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "source": "https://sketchfab.com/3d-models/felsformation-mauseklippe-aus-granit-im-harz-5502aca31ab840ba9d276ac4086d5200",
+      "title": "Felsformation Mauseklippe aus Granit im Harz"
+    },
+    "trianglesOriginal": 1866166,
+    "trianglesOptimized": 130614
+  },
+  {
+    "id": "ruin",
+    "bounds": [
+      [
+        -15.0372,
+        -2.2129,
+        -8.1529
+      ],
+      [
+        29.7674,
+        18.7633,
+        10.745
+      ]
+    ],
+    "source": {
+      "author": "noe-3d.at (https://sketchfab.com/www.noe-3d.at)",
+      "license": "CC-BY-NC-4.0 (http://creativecommons.org/licenses/by-nc/4.0/)",
+      "source": "https://sketchfab.com/3d-models/ruine-hinterhaus-1db770f9df8741999bbe52523bfa145d",
+      "title": "Ruine Hinterhaus"
+    },
+    "trianglesOriginal": 2384966,
+    "trianglesOptimized": 572346
+  },
+  {
+    "id": "ruin-mobile",
+    "bounds": [
+      [
+        -15.0372,
+        -2.2129,
+        -8.1529
+      ],
+      [
+        29.7674,
+        18.7633,
+        10.745
+      ]
+    ],
+    "source": {
+      "author": "noe-3d.at (https://sketchfab.com/www.noe-3d.at)",
+      "license": "CC-BY-NC-4.0 (http://creativecommons.org/licenses/by-nc/4.0/)",
+      "source": "https://sketchfab.com/3d-models/ruine-hinterhaus-1db770f9df8741999bbe52523bfa145d",
+      "title": "Ruine Hinterhaus"
+    },
+    "trianglesOriginal": 2384966,
+    "trianglesOptimized": 297599
+  }
+]

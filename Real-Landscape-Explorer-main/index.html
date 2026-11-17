@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="de"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><meta name="theme-color" content="#14232b">
+<title>Real Landscape Explorer – Naturwelten V3</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#101d26;color:#f5f6ef}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none;touch-action:none}button{font:inherit;cursor:pointer}#world{position:fixed;inset:0;width:100%;height:100%;background:#749aaf;touch-action:none}
+[hidden]{display:none!important}
+#splash{z-index:30;position:fixed;inset:0;background:radial-gradient(ellipse at 60% 16%,#3c5760,#152830 64%,#0c171f 100%);display:flex;align-items:center;justify-content:center;text-align:center;padding:24px}#splash .inner{max-width:460px;width:100%}.symbol{border:1px solid #c1e1d684;display:inline-grid;place-items:center;width:76px;height:76px;border-radius:50%;font:normal 38px Georgia,serif;color:#e6e7d7}.label{font-size:10px;color:#e7cf9f;font-weight:750;letter-spacing:.24em;margin-top:28px;text-transform:uppercase}h1{font:normal clamp(34px,9vw,58px)/1.12 Georgia,serif;letter-spacing:.015em;margin:12px 0 20px}#status{color:#e9efed;line-height:1.6;font-size:14px}.progress{height:4px;border-radius:5px;background:#ffffff3b;margin:22px auto 13px;overflow:hidden;width:84%}#bar{width:0;height:100%;background:#cdb88a;transition:width .25s}#detail{color:#b2c4c7;font-size:11px;line-height:1.6;min-height:32px}.primary{background:#dbc18c;color:#17242a;border:0;border-radius:12px;padding:15px 22px;min-width:186px;font-weight:800;margin-top:24px}.secondary{background:transparent;border:1px solid #c6d5d4aa;border-radius:9px;color:#fff;padding:12px 18px;margin-top:20px}#error{color:#ffd4b6;white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;max-height:130px;overflow:auto}
+#hud{position:fixed;top:calc(max(12px, env(safe-area-inset-top)));left:calc(18px + env(safe-area-inset-left));right:calc(18px + env(safe-area-inset-right));display:flex;justify-content:space-between;align-items:start;pointer-events:none;text-shadow:0 1px 6px #121e24c9;z-index:4;gap:12px}.name{letter-spacing:.16em;font-size:12px;font-weight:850}.sub{font-size:10px;opacity:.82;margin-top:4px}.data{text-align:right;font-size:11px;font-weight:750;line-height:1.7;white-space:nowrap}.data #dir{color:#f1d6a1}#dot{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);color:#fff9ef9e;pointer-events:none;font-size:19px;text-shadow:0 0 5px black;z-index:3}
+#stick{position:fixed;bottom:calc(70px + env(safe-area-inset-bottom));left:calc(20px + env(safe-area-inset-left));border:1px solid #f7f0d8aa;border-radius:50%;width:122px;height:122px;background:#10293654;touch-action:none;z-index:7;box-shadow:inset 0 0 17px #0005}#thumb{position:absolute;top:31px;left:31px;width:58px;height:58px;border-radius:50%;border:2px solid #ffebc8d1;background:#c8b48b86}.controls{position:fixed;bottom:calc(68px + env(safe-area-inset-bottom));right:calc(14px + env(safe-area-inset-right));display:flex;flex-direction:column;gap:8px;z-index:7}.controls button{background:#172f3ccf;color:#fff;border:1px solid #ede5d7b4;min-width:123px;min-height:44px;border-radius:9px;padding:8px;font-size:11px;letter-spacing:.08em;font-weight:740;backdrop-filter:blur(8px)}.controls button:active{background:#836f4d}#foot{position:fixed;bottom:calc(7px + env(safe-area-inset-bottom));left:calc(14px + env(safe-area-inset-left));right:calc(14px + env(safe-area-inset-right));font-size:9px;display:flex;justify-content:space-between;gap:10px;color:#e3ece9e0;text-shadow:0 1px 4px black;z-index:3}#help{position:fixed;inset:0;z-index:20;background:#091a24bc;display:grid;place-items:center;padding:18px;backdrop-filter:blur(8px)}#help .inner{background:#172d36;border:1px solid #dbc18b79;border-radius:18px;padding:25px;max-width:420px}#help h2{font:normal 32px Georgia,serif;margin:10px 0}#help p{font-size:13px;line-height:1.6;color:#e0e8e6}.warning{color:#dec398!important}.copyright{font-size:10px;opacity:.78;margin-top:8px}
+@media(max-width:385px){.name{font-size:11px}.sub{font-size:9px}.controls button{min-width:108px;font-size:10px}#stick{width:108px;height:108px}#thumb{top:27px;left:27px;width:53px;height:53px}}@media(orientation:landscape) and (max-height:520px){#stick{width:95px;height:95px;bottom:25px}#thumb{width:45px;height:45px;top:24px;left:24px}.controls{bottom:24px;gap:4px}.controls button{min-height:30px;padding:4px 8px}#foot{font-size:8px}#hud{top:9px}}
+
+#placesBar{position:fixed;left:calc(16px + env(safe-area-inset-left));top:calc(77px + env(safe-area-inset-top));z-index:11;max-width:min(310px,calc(100vw - 35px));touch-action:manipulation}
+#placesBtn{min-height:44px;padding:0 16px;border-radius:12px;border:1px solid #f0e0bd88;background:#142d36e8;color:#f7efe2;font-size:12px;font-weight:830;letter-spacing:.12em;box-shadow:0 8px 24px #0005;backdrop-filter:blur(12px)}
+#placesPanel{margin-top:9px;padding:13px;border-radius:16px;background:#142a33f4;border:1px solid #e8d5ad70;box-shadow:0 14px 38px #071114bd;backdrop-filter:blur(16px);display:grid;gap:5px}
+#placesPanel .panelHeading{letter-spacing:.15em;color:#d2c09a;font-size:9px;font-weight:850;padding:5px 9px 7px}
+#placesPanel button{border:0;text-align:left;border-radius:10px;background:transparent;color:#fff;min-height:56px;display:flex;align-items:center;gap:12px;padding:7px 10px;font-size:13px}
+#placesPanel button b{font:normal 18px Georgia,serif;color:#cfbe9e}#placesPanel button span{font-weight:730}#placesPanel button small{display:block;margin-top:4px;font-size:10px;font-weight:450;color:#b8c6c3}#placesPanel button:hover,#placesPanel button:focus-visible,#placesPanel button[aria-current="true"]{background:#43615d88;outline:none}
+#sceneNotice{position:fixed;z-index:19;top:calc(75px + env(safe-area-inset-top));right:calc(16px + env(safe-area-inset-right));max-width:min(250px,60vw);padding:12px 14px;background:#172e35ed;border:1px solid #dcc79c88;color:#f3efe5;border-radius:12px;box-shadow:0 10px 27px #0009;font-size:11px;line-height:1.5}
+@media(max-width:520px){#placesBar{top:calc(82px + env(safe-area-inset-top))}#sceneNotice{top:calc(144px + env(safe-area-inset-top));left:16px;right:auto;max-width:min(300px,85vw)}}
+@media(orientation:landscape) and (max-height:520px){#placesBar{top:42px}#placesPanel{max-height:calc(100vh - 105px);overflow:auto}#sceneNotice{top:45px;left:auto;right:140px}}
+</style></head>
+<body>
+<canvas id="world"></canvas>
+<section id="splash"><div class="inner"><div class="symbol">W</div><div class="label">NATURWELTEN · ECHTE 3D-SCANS</div><h1>Real Landscape<br>Explorer V3</h1><div id="status">Bereite die 3D-Naturwelt vor …</div><div class="progress"><div id="bar"></div></div><div id="detail">Weisse Wand · Wald · Mauseklippe · Ruine Hinterhaus</div><div id="error"></div><button id="enter" class="primary" hidden>Welt betreten</button><button id="retry" class="secondary" hidden>Neu laden</button></div></section>
+<header id="hud" hidden><div><div class="name">REAL LANDSCAPE · 3D</div><div class="sub"><span id="locationName">Weisse Wand</span> · Foto-3D</div></div><div class="data"><div id="heightText">Höhe im Modell</div><div id="dir">N</div></div></header>
+<div id="placesBar" hidden><button id="placesBtn" aria-expanded="false" aria-controls="placesPanel">⌖ &nbsp; ORTE</button><div id="placesPanel" hidden><div class="panelHeading">VIER ORTE ENTDECKEN</div><button data-site="base"><b>01</b><span>Weisse Wand<small>Originaler Bergscan</small></span></button><button data-site="forest"><b>02</b><span>Bergwald<small>Wald & echtes Wiesengras</small></span></button><button data-site="rocks"><b>03</b><span>Mauseklippe<small>Granitfelsen im Harz</small></span></button><button data-site="ruin"><b>04</b><span>Ruine Hinterhaus<small>Historisches Mauerwerk</small></span></button></div></div><div id="sceneNotice" role="status" aria-live="polite" hidden></div>
+<div id="dot" hidden>·</div>
+<section id="help" hidden><div class="inner"><div class="label">DEINE ECHTE 3D-LANDSCHAFT</div><h2>Vier Welten, eine Entdeckungsreise</h2><p>Wähle über <b>ORTE</b> einen der vier Schauplätze. Links mit dem Joystick gehen, rechts auf dem Bild wischen, um dich umzusehen. Am Computer: WASD und Mausziehen.</p><p>Mit <b>AUSSICHT</b> wechselst du zur freien Flugkamera. <b>GRAFIK</b> schaltet zwischen den Fotoauflösungen um.</p><p class="warning">Echte 3D-Scans aus verschiedenen Regionen werden hier in voneinander getrennten, fiktiven Landschaftsbereichen gezeigt. Größen und Gelände sind künstlerisch abgestimmt. Das Geländesystem bietet vereinfachte Bodenkollisionen; Gebäudewände, Bäume und Felsspalten besitzen noch keine präzise Mesh-Kollision.</p><div class="copyright">Quellen und Lizenzen in CREDITS.md. Die drei zusätzlichen Orte sind inszenierte Landschaftsausschnitte, keine geografische Rekonstruktion.</div><button id="closeHelp" class="primary">Loswandern</button></div></section>
+<div id="stick" hidden><div id="thumb"></div></div><div class="controls" id="controls" hidden><button id="viewBtn">AUSSICHT</button><button id="runBtn">LAUFEN</button><button id="qualityBtn">GRAFIK: 2K</button><button id="homeBtn">↺ START</button></div>
+<footer id="foot" hidden><span id="footerPlace">Weisse Wand · Originalscan</span><span id="fps">– FPS</span></footer>
+<script>
+'use strict';
+const $=id=>document.getElementById(id), canvas=$('world');
+let gl,shader,sky,texture,grassTex,rockTex,screeTex,vao,vertexCount=0,terrainMeta,heights,coverage,walkable,run=false,mode='walk',fast=false,eco=false,texMode=2,loopId=0;
+let x=0,z=0,y=0,yaw=.25,pitch=-.06,flyHeight=95;
+const keys=new Set();let joyX=0,joyY=0,movePointer=null,lookPointer=null,lookX=0,lookY=0;let frames=0,frameStart=0,lastTime=0,fps=0;
+const vec=(v)=>`vec3(${v[0].toFixed(7)},${v[1].toFixed(7)},${v[2].toFixed(7)})`;
+const VS=`#version 300 es
+precision highp float;
+layout(location=0) in vec3 aP;
+layout(location=1) in vec3 aN;
+layout(location=2) in vec2 aUV;
+layout(location=3) in float aGap;
+uniform vec3 uMin,uExt,uCamera,uRight,uUp,uForward;
+uniform vec4 uZoneForest,uZoneRocks,uZoneRuin;
+uniform float uAspect,uTan,uFar;
+out vec2 vUV;out vec3 vN,vPos;out float vDist,vGap;
+float zoneHeight(vec3 pos,vec4 zone){float d=distance(pos.xz,zone.xy);float t=1.0-smoothstep(zone.w,zone.w+24.0,d);return mix(pos.y,zone.z,t);}
+void main(){vec3 pos=uMin+aP*uExt;pos.y=zoneHeight(pos,uZoneForest);pos.y=zoneHeight(pos,uZoneRocks);pos.y=zoneHeight(pos,uZoneRuin);vec3 delta=pos-uCamera;float px=dot(delta,uRight),py=dot(delta,uUp),pz=dot(delta,uForward);float nearp=.12;float depth=((uFar+nearp)/(uFar-nearp))*pz-(2.*uFar*nearp/(uFar-nearp));gl_Position=vec4(px/(uTan*uAspect),py/uTan,depth,pz);vUV=aUV;vN=aN;vPos=pos;vDist=length(delta);vGap=aGap;}`;
+const FS=`#version 300 es
+precision highp float;
+precision highp sampler2D;
+in vec2 vUV;in vec3 vN,vPos;in float vDist,vGap;
+uniform sampler2D uColor,uGrass,uRock,uScree;
+uniform vec3 uSun,uFog;
+uniform float uDetail;
+out vec4 frag;
+vec2 projUV(vec3 p,vec3 n){vec3 a=abs(n);if(a.y>=max(a.x,a.z))return p.xz*.32;if(a.x>a.z)return p.zy*.32;return p.xy*.32;}
+void main(){
+ vec3 n=normalize(vN);vec3 photo=texture(uColor,vUV).rgb;
+ vec3 col=photo;
+ if(vDist<155. && uDetail>.5){
+  vec2 uv=projUV(vPos,n);
+  vec3 grass=texture(uGrass,uv).rgb;
+  vec3 rock=texture(uRock,uv).rgb;
+  vec3 scree=texture(uScree,uv).rgb;
+  float greenness=smoothstep(.01,.105,photo.g-photo.r*.93);
+  float grassy=greenness*smoothstep(.31,.78,abs(n.y));
+  float stony=clamp(1.-abs(n.y),0.,1.);
+  vec3 fine=mix(mix(scree,rock,.38+.44*stony),grass,grassy);
+  // Close-up enhancement fades continuously back to the genuine photographic scan.
+  float near=1.-smoothstep(16.,155.,vDist);
+  float fill=near*(.24+.40*vGap);
+  vec3 matchedFine=fine*(.60+photo*.80);
+  col=mix(photo,matchedFine,fill);
+ }
+ float sun=max(0.,dot(n,normalize(uSun)));
+ float light=.82+.18*sun;
+ col*=light;
+ float haze=1.-exp(-pow(max(0.,vDist)*.00014,1.18));
+ col=mix(col,uFog,clamp(haze,0.,.31));
+ frag=vec4(col,1.);
+}`;
+const SKYVS=`#version 300 es
+precision highp float;out vec2 vP;const vec2 p[3]=vec2[3](vec2(-1.,-1.),vec2(3.,-1.),vec2(-1.,3.));void main(){vP=p[gl_VertexID];gl_Position=vec4(vP,0.,1.);}`;
+const SKYFS=`#version 300 es
+precision highp float;
+in vec2 vP;uniform vec3 uRight,uUp,uForward,uSun;uniform float uAspect,uTan;out vec4 frag;
+void main(){vec3 ray=normalize(uForward+uRight*vP.x*uAspect*uTan+uUp*vP.y*uTan);
+ float h=clamp(ray.y*.82+.34,0.,1.);
+ vec3 c=mix(vec3(.78,.84,.86),vec3(.32,.54,.77),pow(h,.86));
+ float s=max(0.,dot(ray,normalize(uSun)));
+ c+=vec3(.95,.79,.55)*pow(s,850.)*.31;
+ frag=vec4(c,1.);}`;
+function compile(type,s){const sh=gl.createShader(type);gl.shaderSource(sh,s);gl.compileShader(sh);if(!gl.getShaderParameter(sh,gl.COMPILE_STATUS)){let e=gl.getShaderInfoLog(sh);gl.deleteShader(sh);throw Error('Grafik-Shader: '+e);}return sh;}
+function program(v,f){const a=compile(gl.VERTEX_SHADER,v),b=compile(gl.FRAGMENT_SHADER,f),p=gl.createProgram();gl.attachShader(p,a);gl.attachShader(p,b);gl.linkProgram(p);gl.deleteShader(a);gl.deleteShader(b);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw Error('Grafikprogramm: '+gl.getProgramInfoLog(p));return p;}
+const U=(p,n)=>gl.getUniformLocation(p,n);
+function progress(text,p){$('status').textContent=text;$('bar').style.width=p+'%'}
+async function getArray(url,onProgress){const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw Error(url+' HTTP '+r.status);if(!r.body||!r.headers.get('content-length'))return await r.arrayBuffer();let chunks=[],size=0,len=Number(r.headers.get('content-length'));const reader=r.body.getReader();for(;;){const {done,value}=await reader.read();if(done)break;chunks.push(value);size+=value.length;onProgress?.(size/len);}const output=new Uint8Array(size);let offset=0;for(const chunk of chunks){output.set(chunk,offset);offset+=chunk.length;}return output.buffer;}
+async function loadTexture(n){const r=await fetch(`./assets/weisse-wand-${n}k.jpg?v=2`,{cache:'force-cache'});if(!r.ok)throw Error('Foto-Textur konnte nicht geladen werden');const blob=await r.blob();let image;if('createImageBitmap' in window){image=await createImageBitmap(blob,{imageOrientation:'none'});}else{image=await new Promise((ok,bad)=>{let im=new Image(),url=URL.createObjectURL(blob);im.onload=()=>{URL.revokeObjectURL(url);ok(im)};im.onerror=bad;im.src=url;});}
+ const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,gl.RGB,gl.UNSIGNED_BYTE,image);gl.generateMipmap(gl.TEXTURE_2D);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);if(image.close)image.close();return t;}
+async function loadDetailTexture(name){
+ const r=await fetch('./assets/'+name+'.jpg?v=2',{cache:'force-cache'});if(!r.ok)throw Error('Nahmaterial fehlt: '+name);
+ let image;if('createImageBitmap' in window){image=await createImageBitmap(await r.blob());}
+ else{image=await new Promise(async(ok,bad)=>{const url=URL.createObjectURL(await r.blob());const im=new Image();im.onload=()=>{URL.revokeObjectURL(url);ok(im)};im.onerror=()=>{URL.revokeObjectURL(url);bad(Error('Bild konnte nicht dekodiert werden'))};im.src=url;});}
+ const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);
+ gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,gl.RGB,gl.UNSIGNED_BYTE,image);
+ gl.generateMipmap(gl.TEXTURE_2D);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);
+ gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+ gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.REPEAT);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.REPEAT);
+ if(image.close)image.close();return t;
+}
+
+// Scenic assets are real, reduced source meshes with source UV maps and photographic textures.
+// The three photo-scan sites are a *fictional*, not geographically accurate, arrangement.
+const SITE_DATA={
+  base:{title:'Weisse Wand',desc:'Originalscan',spawn:null},
+  forest:{title:'Bergwald',desc:'Wald & Wiesengras',model:'forest',center:[1850,90],radius:38,scale:1.22,level:730,embed:.12,spawnOffset:[0,30],yaw:0,pitch:.075},
+  rocks:{title:'Mauseklippe',desc:'Harz · Granitformation',model:'rocks',center:[4240,560],radius:54,scale:.59,level:710,embed:7.5,spawnOffset:[0,44],yaw:0,pitch:.14},
+  ruin:{title:'Ruine Hinterhaus',desc:'Begehbare Ruinenlandschaft',model:'ruin',center:[3030,340],radius:48,scale:1,level:705,embed:.3,spawnOffset:[0,34],yaw:0,pitch:.16}
+};
+const scenicMeshes=new Map(),loadingMeshes=new Map();let scenicShader,activeSite='base',lastStreamCheck=0;
+const grassPatches=[[1830,93,1.],[1841,118,.9],[1861,111,.92],[1865,73,1.06],[1822,82,.85],[3031,375,1.],[3057,334,.8],[3007,341,.8]];
+const SCENE_VERTEX=`#version 300 es
+precision highp float;
+layout(location=0) in vec3 aPosition;
+layout(location=1) in vec3 aNormal;
+layout(location=2) in vec2 aTex;
+uniform vec3 uCamera,uRight,uUp,uForward,uOffset,uSun;
+uniform float uAspect,uTan,uFar,uScale;
+out vec2 vTex;out vec3 vNormal;out float vDist;
+void main(){vec3 pos=aPosition*uScale+uOffset;vec3 delta=pos-uCamera;
+float px=dot(delta,uRight),py=dot(delta,uUp),pz=dot(delta,uForward);
+float near=.12;float depth=((uFar+near)/(uFar-near))*pz-(2.0*uFar*near/(uFar-near));
+gl_Position=vec4(px/(uTan*uAspect),py/uTan,depth,pz);vTex=aTex;vNormal=aNormal;vDist=length(delta);}`;
+const SCENE_FRAGMENT=`#version 300 es
+precision highp float;
+in vec2 vTex;in vec3 vNormal;in float vDist;
+uniform sampler2D uPhoto;uniform vec4 uTint;uniform float uCutoff;
+uniform vec3 uSun,uFog;
+out vec4 frag;
+void main(){vec4 photo=texture(uPhoto,vTex)*uTint;
+if(photo.a<uCutoff)discard;
+vec3 n=normalize(vNormal);float sunlight=max(0.0,dot(n,normalize(uSun)));
+vec3 color=photo.rgb*(.76+.28*sunlight);
+float aerial=clamp(1.0-exp(-pow(max(0.0,vDist)*.00015,1.2)),0.0,.35);
+frag=vec4(mix(color,uFog,aerial),1.0);}`;
+
+const REGIONAL_VERTEX=`#version 300 es
+precision highp float;
+layout(location=0) in vec3 aPosition;
+layout(location=1) in vec3 aNormal;
+uniform vec3 uCamera,uRight,uUp,uForward;
+uniform float uAspect,uTan,uFar;
+out vec3 vPos,vNorm;out float vDist;
+void main(){vec3 delta=aPosition-uCamera;float xx=dot(delta,uRight),yy=dot(delta,uUp),zz=dot(delta,uForward);
+float nearp=.12,clip=((uFar+nearp)/(uFar-nearp))*zz-(2.0*uFar*nearp/(uFar-nearp));
+gl_Position=vec4(xx/(uTan*uAspect),yy/uTan,clip,zz);
+vPos=aPosition;vNorm=aNormal;vDist=length(delta);}`;
+const REGIONAL_FRAGMENT=`#version 300 es
+precision highp float;
+in vec3 vPos,vNorm;in float vDist;
+uniform sampler2D uGrass,uRock,uScree;
+uniform vec3 uSun,uFog;
+out vec4 frag;
+void main(){vec3 n=normalize(vNorm);vec3 photo=texture(uGrass,vPos.xz*.24).rgb;
+vec3 rock=texture(uRock,vPos.xz*.18).rgb;
+vec3 sand=texture(uScree,vPos.xz*.17).rgb;
+float steep=1.0-clamp(n.y,0.0,1.0);
+float stone=smoothstep(.10,.59,steep)*.72;
+vec3 col=mix(photo,mix(rock,sand,.22),stone);
+float sun=max(0.0,dot(n,normalize(uSun)));col*=.74+.34*sun;
+float d=1.0-exp(-pow(vDist*.00110,1.38));
+col=mix(col,uFog,clamp(d,0.0,.92));frag=vec4(col,1.0);}`;
+let regionalShader;const regionalMeshes=new Map();
+function regionalTerrain(site){
+ if(regionalMeshes.has(site.title))return regionalMeshes.get(site.title);
+ // Regional landscape is generated once. It never changes the original scanned mountain.
+ const N=185,SPAN=1240,STEP=SPAN/(N-1),arr=new Float32Array(N*N*6);
+ let k=0;for(let iz=0;iz<N;iz++)for(let ix=0;ix<N;ix++){
+  const x=site.center[0]-SPAN*.5+ix*STEP,z=site.center[1]-SPAN*.5+iz*STEP;
+  const y=scenicElevation(x,z,site),s=STEP*.30;
+  const nx=scenicElevation(x-s,z,site)-scenicElevation(x+s,z,site);
+  const nz=scenicElevation(x,z-s,site)-scenicElevation(x,z+s,site);
+  const len=Math.hypot(nx,2*s,nz);arr.set([x,y,z,nx/len,2*s/len,nz/len],k);k+=6;
+ }
+ const tris=new Uint32Array((N-1)*(N-1)*6);k=0;
+ for(let iz=0;iz<N-1;iz++)for(let ix=0;ix<N-1;ix++){
+  const a=iz*N+ix,b=a+1,c=a+N,d=c+1;
+  tris.set([a,c,b,b,c,d],k);k+=6;
+ }
+ const vao=gl.createVertexArray();gl.bindVertexArray(vao);
+ const vb=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,vb);gl.bufferData(gl.ARRAY_BUFFER,arr,gl.STATIC_DRAW);
+ gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,3,gl.FLOAT,false,24,0);
+ gl.enableVertexAttribArray(1);gl.vertexAttribPointer(1,3,gl.FLOAT,false,24,12);
+ const ib=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,tris,gl.STATIC_DRAW);gl.bindVertexArray(null);
+ const output={vao,vb,ib,count:tris.length};regionalMeshes.set(site.title,output);return output;
+}
+function drawRegionalTerrain(b,aspect,tan){
+ if(activeSite==='base')return;
+ const o=regionalTerrain(SITE_DATA[activeSite]);gl.useProgram(regionalShader);
+ sceneUniform(regionalShader,regionalShader.u,b,aspect,tan);
+ u3(regionalShader,regionalShader.u.uCamera,[x,y,z]);u3(regionalShader,regionalShader.u.uFog,[.69,.76,.79]);gl.uniform1f(regionalShader.u.uFar,6500);
+ for(const [img,unit,name] of [[grassTex,0,'uGrass'],[rockTex,1,'uRock'],[screeTex,2,'uScree']]){
+  gl.activeTexture(gl.TEXTURE0+unit);gl.bindTexture(gl.TEXTURE_2D,img);gl.uniform1i(regionalShader.u[name],unit);
+ }
+ gl.bindVertexArray(o.vao);gl.drawElements(gl.TRIANGLES,o.count,gl.UNSIGNED_INT,0);gl.bindVertexArray(null);
+}
+function initializeScenic(){
+ scenicShader=program(SCENE_VERTEX,SCENE_FRAGMENT);scenicShader.u={};
+ for(const key of ['uCamera','uRight','uUp','uForward','uAspect','uTan','uFar','uOffset','uSun','uScale','uPhoto','uTint','uCutoff','uFog']) scenicShader.u[key]=U(scenicShader,key);
+ regionalShader=program(REGIONAL_VERTEX,REGIONAL_FRAGMENT);regionalShader.u={};for(const key of ['uCamera','uRight','uUp','uForward','uAspect','uTan','uFar','uSun','uFog','uGrass','uRock','uScree'])regionalShader.u[key]=U(regionalShader,key);
+}
+function rawHeight(X,Z){
+ const mn=terrainMeta.min,mx=terrainMeta.max,n=terrainMeta.grid;
+ const fx=Math.min(n-1.001,Math.max(0,(X-mn[0])/(mx[0]-mn[0])*(n-1)));
+ const fz=Math.min(n-1.001,Math.max(0,(Z-mn[2])/(mx[2]-mn[2])*(n-1)));
+ const i=fx|0,j=fz|0,u=fx-i,v=fz-j;
+ const a=heights[j*n+i],b=heights[j*n+i+1],c=heights[(j+1)*n+i],d=heights[(j+1)*n+i+1];
+ if(Math.max(a,b,c,d)-Math.min(a,b,c,d)>9.)return [a,b,c,d][(u>.5?1:0)+(v>.5?2:0)];
+ return a*(1-u)*(1-v)+b*u*(1-v)+c*(1-u)*v+d*u*v;
+}
+function siteBlend(X,Z,site){const dx=X-site.center[0],dz=Z-site.center[1],d=Math.hypot(dx,dz),v=Math.max(0,Math.min(1,(d-site.radius)/24));const q=v*v*(3-2*v);return 1-q;}
+
+function scenicElevation(X,Z,site){
+ const dx=X-site.center[0], dz=Z-site.center[1], d=Math.hypot(dx,dz);
+ const t=Math.max(0,Math.min(1,(d-site.radius)/80)),r=t*t*(3-2*t);
+ const n1=Math.sin(dx*.019+site.center[0]*.004)*Math.cos(dz*.016);
+ const n2=Math.sin((dx+dz)*.041+1.15)*Math.sin((dx-dz)*.037);
+ const n3=Math.sin(dx*.078+dz*.024)*Math.cos(dz*.083);
+ const hills=26*n1+12*n2+3*n3;
+ // The historic ruin sits on a natural ridge rather than floating above a flat field.
+ const ridge=site.model==='ruin'?6.5*Math.exp(-((dx/46)**4+(dz/25)**4)):
+            site.model==='forest'?1.4*Math.exp(-((dx/30)**4+(dz/24)**4)):0.;
+ const outer=Math.max(0,Math.min(1,(d-220)/380));
+ return site.level + ridge + r*hills + 30*outer*outer;
+}
+function nearestScenic(X,Z){let best=null,d=Infinity;
+ for(const k of ['forest','rocks','ruin']){let a=SITE_DATA[k],v=Math.hypot(X-a.center[0],Z-a.center[1]);if(v<d){d=v;best=a;}}
+ return d<650?best:null;
+}
+function siteTerrain(X,Z){const s=nearestScenic(X,Z);return s?scenicElevation(X,Z,s):rawHeight(X,Z);}
+
+function siteCoords(site,meta,scale=site.scale,location=site.center){
+ const lower=meta.bounds[0],upper=meta.bounds[1];
+ return [location[0]-(lower[0]+upper[0])*.5*scale,(site.level??siteTerrain(...location))-lower[1]*scale-site.embed,location[1]-(lower[2]+upper[2])*.5*scale];
+}
+async function sceneTexture(file){
+ const r=await fetch('./assets/scenes/'+file+'?v=3',{cache:'force-cache'});if(!r.ok)throw Error('Textur fehlt: '+file);
+ const blob=await r.blob();let im;
+ if('createImageBitmap' in window){im=await createImageBitmap(blob,{imageOrientation:'none'});}
+ else{im=await new Promise((resolve,reject)=>{const url=URL.createObjectURL(blob),i=new Image();i.onload=()=>{URL.revokeObjectURL(url);resolve(i)};i.onerror=()=>{URL.revokeObjectURL(url);reject(Error('Textur konnte nicht geladen werden'))};i.src=url;});}
+ const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);
+ gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,im);
+ gl.generateMipmap(gl.TEXTURE_2D);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);
+ gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.REPEAT);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.REPEAT);
+ if(im.close)im.close();return t;
+}
+async function ensureScenic(name){
+ if(scenicMeshes.has(name))return scenicMeshes.get(name);
+ if(loadingMeshes.has(name))return loadingMeshes.get(name);
+ const promise=(async()=>{
+  const dir='./assets/scenes/';const assetName=name==='ruin' && /iPhone|iPad|Android|Mobile/i.test(navigator.userAgent)?'ruin-mobile':name;const r=await fetch(dir+assetName+'.json?v=3');if(!r.ok)throw Error('Modellbeschreibung fehlt: '+name);
+  const meta=await r.json();const array=await getArray(dir+assetName+'.bin?v=3');
+  if(array.byteLength!==meta.vertexBytes+meta.indexCount*4||meta.vertexStride!==20)throw Error('Fehlerhafte Modellgeometrie: '+name);
+  const texNames=[...new Set(meta.materials.map(m=>m.texture).filter(Boolean))];
+  const images=await Promise.all(texNames.map(sceneTexture));const textures=Object.fromEntries(texNames.map((t,i)=>[t,images[i]]));
+  const vaoScene=gl.createVertexArray();gl.bindVertexArray(vaoScene);
+  const vb=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,vb);gl.bufferData(gl.ARRAY_BUFFER,new Uint8Array(array,0,meta.vertexBytes),gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,3,gl.FLOAT,false,20,0);
+  gl.enableVertexAttribArray(1);gl.vertexAttribPointer(1,3,gl.BYTE,true,20,12);
+  gl.enableVertexAttribArray(2);gl.vertexAttribPointer(2,2,gl.HALF_FLOAT,false,20,16);
+  const ib=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint8Array(array,meta.vertexBytes),gl.STATIC_DRAW);
+  gl.bindVertexArray(null);
+  const result={meta,vao:vaoScene,vb,ib,textures};scenicMeshes.set(name,result);return result;
+ })().finally(()=>loadingMeshes.delete(name));loadingMeshes.set(name,promise);return promise;
+}
+function drawScenic(b,aspect,tan){
+ if(!scenicShader)return;
+ drawRegionalTerrain(b,aspect,tan);
+ gl.useProgram(scenicShader);sceneUniform(scenicShader,scenicShader.u,b,aspect,tan);
+ u3(scenicShader,scenicShader.u.uCamera,[x,y,z]);u3(scenicShader,scenicShader.u.uFog,[.69,.76,.79]);
+ gl.uniform1f(scenicShader.u.uFar,6500);gl.uniform1i(scenicShader.u.uPhoto,0);
+ for(const name of ['forest','rocks','ruin','grass']){
+  const o=scenicMeshes.get(name);if(!o)continue;
+  const patches=name==='grass'?grassPatches.map(v=>({location:[v[0],v[1]],scale:v[2],site:{embed:.05,center:[v[0],v[1]],scale:v[2]}})):
+     [{site:SITE_DATA[name],location:SITE_DATA[name].center,scale:SITE_DATA[name].scale}];
+  gl.bindVertexArray(o.vao);
+  for(const patch of patches){
+   if(Math.hypot(patch.location[0]-x,patch.location[1]-z)>240)continue;
+   const ofs=siteCoords(patch.site,o.meta,patch.scale,patch.location);
+   u3(scenicShader,scenicShader.u.uOffset,ofs);gl.uniform1f(scenicShader.u.uScale,patch.scale);
+   for(const group of o.meta.groups){
+    if(!group.count || (name==='ruin' && group.material===4))continue;const m=o.meta.materials[group.material];
+    gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,o.textures[m.texture]||null);
+    gl.uniform4fv(scenicShader.u.uTint,m.factor||[1,1,1,1]);
+    gl.uniform1f(scenicShader.u.uCutoff,m.alpha==='OPAQUE'?-.1:Math.max(.22,Math.min(.75,m.cutoff||.42)));
+    gl.drawElements(gl.TRIANGLES,group.count,gl.UNSIGNED_INT,group.first*4);
+   }
+  }
+  gl.bindVertexArray(null);
+ }
+}
+function setNotice(message){$('sceneNotice').textContent=message;$('sceneNotice').hidden=!message;}
+function setSiteLabel(id){const a=SITE_DATA[id];$('locationName').textContent=a.title;$('footerPlace').textContent=a.title+' · '+a.desc;for(const b of $('placesPanel').querySelectorAll('button'))b.setAttribute('aria-current',String(b.dataset.site===id));}
+async function switchSite(id){
+ if(!SITE_DATA[id])return;
+ $('placesPanel').hidden=true;$('placesBtn').setAttribute('aria-expanded','false');
+ const site=SITE_DATA[id];
+ try{
+  if(site.model){setNotice('Lade '+site.title+' in optimierter 3D-Qualität …');await ensureScenic(site.model);if(id==='forest')await ensureScenic('grass');}
+  activeSite=id;
+  if(id==='base'){x=terrainMeta.spawn[0];z=terrainMeta.spawn[1];yaw=terrainMeta.spawnYaw??.25;pitch=-.06;}
+  else{x=site.center[0]+site.spawnOffset[0];const portrait=innerWidth/innerHeight<.72;z=site.center[1]+(portrait?({forest:54,rocks:102,ruin:84}[id]||site.spawnOffset[1]):site.spawnOffset[1]);yaw=site.yaw;pitch=site.pitch;}
+  mode='walk';$('viewBtn').textContent='AUSSICHT';y=height(x,z)+1.72;
+  setSiteLabel(id);setNotice('');
+ }catch(err){setNotice('Konnte '+site.title+' nicht laden: '+(err.message||err));console.error(err);}
+}
+function maybeStream(time){if(time-lastStreamCheck<1800)return;lastStreamCheck=time;
+ for(const id of ['forest','rocks','ruin']){const a=SITE_DATA[id];if(Math.hypot(x-a.center[0],z-a.center[1])<185){ensureScenic(id).catch(console.error);if(id==='forest')ensureScenic('grass').catch(console.error);}}
+}
+$('placesBtn').addEventListener('click',()=>{const panel=$('placesPanel');panel.hidden=!panel.hidden;$('placesBtn').setAttribute('aria-expanded',String(!panel.hidden));});
+for(const button of $('placesPanel').querySelectorAll('button'))button.addEventListener('click',()=>switchSite(button.dataset.site));
+async function initialize(){try{
+ progress('Prüfe die 3D-Grafik …',5);gl=canvas.getContext('webgl2',{alpha:false,antialias:false,depth:true,powerPreference:'high-performance'});if(!gl)throw Error('WebGL 2 ist auf diesem Gerät nicht verfügbar.');
+ shader=program(VS,FS);sky=program(SKYVS,SKYFS);initializeScenic();shader.u={};sky.u={};
+ for(let n of ['uMin','uExt','uCamera','uRight','uUp','uForward','uAspect','uTan','uFar','uColor','uGrass','uRock','uScree','uDetail','uSun','uFog','uZoneForest','uZoneRocks','uZoneRuin'])shader.u[n]=U(shader,n);
+ for(let n of ['uRight','uUp','uForward','uAspect','uTan','uSun'])sky.u[n]=U(sky,n);
+ const res=await fetch('./assets/meta.json?v=2',{cache:'no-store'});if(!res.ok)throw Error('Modelldaten fehlen. Bitte alle Dateien aus dem ZIP hochladen.');terrainMeta=await res.json();
+ progress('Lade echte Berggeometrie …',14);
+ const [vertices,collision,area,walk]=await Promise.all([getArray('./assets/terrain.bin?v=2',p=>progress('Lade originale Felsformen …',14+p*48)),getArray('./assets/height.bin?v=2'),getArray('./assets/coverage.bin?v=2'),getArray('./assets/walkable.bin?v=2')]);
+ if(vertices.byteLength%16)throw Error('Die Geometriedatei ist beschädigt.');
+ vertexCount=vertices.byteLength/16;heights=new Float32Array(collision);coverage=new Uint8Array(area);walkable=new Uint8Array(walk);if(heights.length!==terrainMeta.grid**2||coverage.length!==heights.length||walkable.length!==heights.length)throw Error('Die Geländekollision ist unvollständig.');
+ vao=gl.createVertexArray();gl.bindVertexArray(vao);const buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,vertices,gl.STATIC_DRAW);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,3,gl.UNSIGNED_SHORT,true,16,0);gl.enableVertexAttribArray(1);gl.vertexAttribPointer(1,3,gl.BYTE,true,16,10);gl.enableVertexAttribArray(2);gl.vertexAttribPointer(2,2,gl.UNSIGNED_SHORT,true,16,6);gl.enableVertexAttribArray(3);gl.vertexAttribPointer(3,1,gl.UNSIGNED_BYTE,true,16,13);gl.bindVertexArray(null);
+ progress('Lade fotografische Original-Oberfläche …',75);texture=await loadTexture(2);progress('Bereite natürliche Nahmaterialien vor …',85);[grassTex,rockTex,screeTex]=await Promise.all(['close-grass','close-rock','close-scree'].map(loadDetailTexture));
+ // Curated regional stages use their own hand-tuned ground elevations.
+ x=terrainMeta.spawn[0];z=terrainMeta.spawn[1];yaw=terrainMeta.spawnYaw??.25;y=height(x,z)+1.72;
+ gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.disable(gl.CULL_FACE);gl.disable(gl.BLEND);
+ progress('Originalmodell und sichere Wanderzonen geladen.',100);
+ $('detail').textContent=`${Math.round(vertexCount/3).toLocaleString('de-DE')} echte 3D-Dreiecke · Original-Fototextur · freies Gehen`;$('enter').hidden=false;
+ }catch(e){console.error(e);progress('Die Landschaft konnte nicht gestartet werden.',0);$('error').textContent=String(e.message||e);$('retry').hidden=false;}}
+function height(X,Z){return siteTerrain(X,Z);}
+function basis(){const s=Math.sin(yaw),c=Math.cos(yaw),si=Math.sin(pitch),co=Math.cos(pitch);return {f:[s*co,si,-c*co],r:[c,0,s],u:[-s*si,co,c*si]};}
+function u3(p,loc,a){if(loc!==null)gl.uniform3fv(loc,a)}
+function sceneUniform(p,u,b,aspect,tan){u3(p,u.uRight,b.r);u3(p,u.uUp,b.u);u3(p,u.uForward,b.f);gl.uniform1f(u.uAspect,aspect);gl.uniform1f(u.uTan,tan);u3(p,u.uSun,[.42,.84,-.40]);}
+function draw(){const dpr=Math.min(devicePixelRatio||1,eco?0.82:1.35),w=Math.max(1,Math.floor(innerWidth*dpr)),h=Math.max(1,Math.floor(innerHeight*dpr));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h);}const aspect=w/h,tan=Math.tan((mode==='walk'?70:78)*Math.PI/360),b=basis();
+ gl.disable(gl.DEPTH_TEST);gl.depthMask(false);gl.useProgram(sky);sceneUniform(sky,sky.u,b,aspect,tan);gl.drawArrays(gl.TRIANGLES,0,3);
+ gl.enable(gl.DEPTH_TEST);gl.depthMask(true);gl.clear(gl.DEPTH_BUFFER_BIT);gl.useProgram(shader);sceneUniform(shader,shader.u,b,aspect,tan);
+ u3(shader,shader.u.uMin,terrainMeta.min);u3(shader,shader.u.uExt,terrainMeta.max.map((a,i)=>a-terrainMeta.min[i]));u3(shader,shader.u.uCamera,[x,y,z]);gl.uniform1f(shader.u.uFar,6500);u3(shader,shader.u.uFog,[.69,.76,.79]);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,texture);gl.uniform1i(shader.u.uColor,0);for(const [tex,unit,name] of [[grassTex,1,'uGrass'],[rockTex,2,'uRock'],[screeTex,3,'uScree']]){gl.activeTexture(gl.TEXTURE0+unit);gl.bindTexture(gl.TEXTURE_2D,tex);gl.uniform1i(shader.u[name],unit);}gl.uniform1f(shader.u.uDetail,1.);
+ for(const [name,key] of [['forest','uZoneForest'],['rocks','uZoneRocks'],['ruin','uZoneRuin']]){const q=SITE_DATA[name];gl.uniform4f(shader.u[key],q.center[0],q.center[1],q.level,q.radius);}
+ if(activeSite==='base'){gl.bindVertexArray(vao);gl.drawArrays(gl.TRIANGLES,0,vertexCount);gl.bindVertexArray(null);}drawScenic(b,aspect,tan);
+}
+function allowed(nx,nz){let m=terrainMeta.min,M=terrainMeta.max;
+for(const k of ['forest','rocks','ruin'])if(Math.hypot(nx-SITE_DATA[k].center[0],nz-SITE_DATA[k].center[1])<570)return true;if(!(nx>m[0]+10&&nx<M[0]-10&&nz>m[2]+10&&nz<M[2]-10))return false;const n=terrainMeta.grid,i=Math.max(0,Math.min(n-1,Math.round((nx-m[0])/(M[0]-m[0])*(n-1)))),j=Math.max(0,Math.min(n-1,Math.round((nz-m[2])/(M[2]-m[2])*(n-1))));return walkable[j*n+i]>0;}
+function motion(dt){let f=(keys.has('KeyW')||keys.has('ArrowUp')?1:0)-(keys.has('KeyS')||keys.has('ArrowDown')?1:0)-joyY;
+let r=(keys.has('KeyD')||keys.has('ArrowRight')?1:0)-(keys.has('KeyA')||keys.has('ArrowLeft')?1:0)+joyX;let norm=Math.hypot(f,r);if(norm>1){f/=norm;r/=norm;}
+const speed=(mode==='fly'?38:(fast||keys.has('ShiftLeft')?6:3.2));let dx=(Math.sin(yaw)*f+Math.cos(yaw)*r)*speed*dt;let dz=(-Math.cos(yaw)*f+Math.sin(yaw)*r)*speed*dt;
+if(mode==='fly'){const area=SITE_DATA[activeSite];const minX=activeSite==='base'?terrainMeta.min[0]+3:area.center[0]-540,maxX=activeSite==='base'?terrainMeta.max[0]-3:area.center[0]+540,minZ=activeSite==='base'?terrainMeta.min[2]+3:area.center[1]-540,maxZ=activeSite==='base'?terrainMeta.max[2]-3:area.center[1]+540;x=Math.max(minX,Math.min(maxX,x+dx));z=Math.max(minZ,Math.min(maxZ,z+dz));let target=height(x,z)+flyHeight;y+=(target-y)*Math.min(1,dt*4);if(keys.has('Space'))flyHeight=Math.min(700,flyHeight+dt*50);if(keys.has('KeyX'))flyHeight=Math.max(8,flyHeight-dt*50);return;}
+let h0=height(x,z);function climbSafe(nx,nz){return allowed(nx,nz)&&height(nx,nz)-h0<Math.max(.17,Math.hypot(dx,dz)*.90);}if(climbSafe(x+dx,z+dz)){x+=dx;z+=dz;}else{if(climbSafe(x+dx,z))x+=dx;if(climbSafe(x,z+dz))z+=dz;}
+const target=height(x,z)+1.72;y+=(target-y)*Math.min(1,dt*10);
+}
+function frame(time){if(!run)return;const dt=Math.min(.06,(time-lastTime)/1000||.016);lastTime=time;motion(dt);maybeStream(time);draw();frames++;if(time-frameStart>1100){fps=Math.round(frames*1000/(time-frameStart));frameStart=time;frames=0;$('fps').textContent=fps+' FPS · '+(mode==='walk'?'zu Fuß':'Aussicht');if(fps<26&&!eco){eco=true;$('qualityBtn').textContent='GRAFIK: ECO';}}
+const words=['N','NO','O','SO','S','SW','W','NW'];let d=((yaw*180/Math.PI)%360+360)%360;$('dir').textContent=words[Math.round(d/45)%8];$('heightText').textContent=(activeSite==='base'?'Modellhöhe ':'Spielhöhe ')+Math.round(height(x,z))+' m'+(activeSite==='base'?'*':'');loopId=requestAnimationFrame(frame);}
+function begin(){$('splash').hidden=true;for(let id of ['hud','dot','stick','controls','foot','placesBar'])$(id).hidden=false;$('help').hidden=false;run=true;frameStart=lastTime=performance.now();requestAnimationFrame(frame);ensureScenic('forest').then(()=>ensureScenic('grass')).catch(console.error);}
+function setJoy(px,py){const max=37,n=Math.hypot(px,py),f=n>max?max/n:1,dx=px*f,dy=py*f;joyX=dx/max;joyY=dy/max;$('thumb').style.transform=`translate(${dx}px,${dy}px)`;}
+const stick=$('stick');stick.addEventListener('pointerdown',e=>{movePointer=e.pointerId;stick.setPointerCapture(e.pointerId);stickMove(e);});function stickMove(e){if(e.pointerId!==movePointer)return;let b=stick.getBoundingClientRect();setJoy(e.clientX-b.left-b.width/2,e.clientY-b.top-b.height/2);}stick.addEventListener('pointermove',stickMove);function stickEnd(e){if(e.pointerId===movePointer){movePointer=null;setJoy(0,0);}}stick.addEventListener('pointerup',stickEnd);stick.addEventListener('pointercancel',stickEnd);
+canvas.addEventListener('pointerdown',e=>{if(!$('help').hidden)return;lookPointer=e.pointerId;lookX=e.clientX;lookY=e.clientY;canvas.setPointerCapture(e.pointerId);});canvas.addEventListener('pointermove',e=>{if(e.pointerId!==lookPointer)return;const dx=e.clientX-lookX,dy=e.clientY-lookY;lookX=e.clientX;lookY=e.clientY;yaw+=dx*.0045;pitch=Math.max(-1.35,Math.min(1.35,pitch-dy*.0035));});const endLook=e=>{if(e.pointerId===lookPointer)lookPointer=null;};canvas.addEventListener('pointerup',endLook);canvas.addEventListener('pointercancel',endLook);
+addEventListener('keydown',e=>{if(e.code.startsWith('Arrow')||e.code==='Space')e.preventDefault();keys.add(e.code);if(e.code==='KeyV'&&!e.repeat)toggleView();if(e.code==='KeyR'&&!e.repeat)home();});addEventListener('keyup',e=>keys.delete(e.code));addEventListener('blur',()=>{keys.clear();setJoy(0,0);});
+function toggleView(){if(mode==='walk'){mode='fly';flyHeight=100;y=height(x,z)+flyHeight;pitch=-.40;$('viewBtn').textContent='WANDERN';}else{mode='walk';if(!allowed(x,z)){x=terrainMeta.spawn[0];z=terrainMeta.spawn[1];}y=height(x,z)+1.72;pitch=-.08;$('viewBtn').textContent='AUSSICHT';}}
+function home(){if(activeSite!=='base'){switchSite(activeSite);return;}x=terrainMeta.spawn[0];z=terrainMeta.spawn[1];y=height(x,z)+(mode==='walk'?1.72:flyHeight);yaw=terrainMeta.spawnYaw??.25;pitch=mode==='walk'?-.06:-.35;}
+$('viewBtn').addEventListener('click',toggleView);$('runBtn').addEventListener('click',()=>{fast=!fast;$('runBtn').textContent=fast?'GEHEN':'LAUFEN';});$('qualityBtn').addEventListener('click',async()=>{if(!gl)return;const btn=$('qualityBtn');btn.disabled=true;const next=texMode===2?4:texMode===4?1:2;try{const t=await loadTexture(next);gl.deleteTexture(texture);texture=t;texMode=next;eco=next===1;btn.textContent='GRAFIK: '+(next===1?'ECO':next+'K');}catch(e){console.error(e);btn.textContent='GRAFIK FEHLER';}finally{btn.disabled=false;}});$('homeBtn').addEventListener('click',home);$('enter').addEventListener('click',begin);$('closeHelp').addEventListener('click',()=>{$('help').hidden=true;});$('retry').addEventListener('click',()=>location.reload());
+initialize();
+</script></body></html>

@@ -1,0 +1,11 @@
+REAL LANDSCAPE EXPLORER V3 – VALIDATION
+
+forest: 19,419 -> 19,419 triangles; 28,639 vertices; 0.8 MiB; textures OK
+grass: 77,966 -> 77,966 triangles; 79,557 vertices; 2.4 MiB; textures OK
+rocks: 1,866,166 -> 130,614 triangles; 119,934 vertices; 3.8 MiB; textures OK
+ruin: 2,384,966 -> 572,346 triangles; 1,146,144 vertices; 28.4 MiB; textures OK
+ruin-mobile: 2,384,966 -> 297,599 triangles; 586,804 vertices; 14.6 MiB; textures OK
+Runtime index.html: JavaScript syntax OK
+Original V2 terrain + textures: present
+WebGL2 browser smoke-tests (desktop and mobile emulation): previously passed
+iPhone Safari real-device test: NOT performed
