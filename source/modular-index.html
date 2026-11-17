@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#121f26">
+<title>REAL LANDSCAPE – Vulkanisches Hochland</title>
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<canvas id="world" aria-label="Frei begehbare dreidimensionale Vulkanlandschaft"></canvas>
+<section id="loading" role="status" aria-live="polite">
+  <div class="mark">R<span class="markdot">•</span>W</div>
+  <p class="eyebrow">REAL LANDSCAPE EXPLORER · V1</p>
+  <h1>Vulkanisches<br>Hochland</h1>
+  <p class="intro" id="loadtext">Lade das echte 3D-Geländemodell …</p>
+  <div class="loadingline"><div id="progress"></div></div>
+  <p class="loadingdetail" id="loaddetail">3,6 × 3,6 km · lokale Modelldatei · keine externen Dienste</p>
+  <button class="primary" id="start" hidden>Welt betreten</button>
+  <button class="retry" id="retry" hidden>Erneut versuchen</button>
+</section>
+<header id="hud" hidden>
+ <div class="brand"><span class="orb">✺</span><div><b>REAL LANDSCAPE</b><small>Vulkanisches Hochland · V1</small></div></div>
+ <div class="readouts"><div id="readout">Höhe – m</div><div id="compass">NORD</div></div>
+</header>
+<div id="crosshair" hidden>·</div>
+<div id="help" hidden>
+ <div class="help-inner">
+  <div class="smalltitle">DU ERKUNDEST EINE 3D-WELT</div>
+  <h2>Du kannst überall hinlaufen.</h2>
+  <p>Links mit dem Joystick gehen, rechts mit dem Finger umsehen. Am Computer: WASD und Mausziehen.</p>
+  <p class="warn">Das Gelände ist frei gestaltet und <strong>kein</strong> geografischer Originalscan von Island.</p>
+  <button class="primary" id="closehelp">Erkunden</button>
+ </div>
+</div>
+<div id="touchui" hidden>
+ <div id="stick" aria-label="Bewegen"><div id="nub"></div></div>
+ <div class="right-controls">
+  <button id="moveMode" aria-label="Wechsel zwischen Gehen und Aussicht">WANDERN</button>
+  <button id="sprint" aria-label="Schneller gehen">LAUFEN</button>
+  <button id="graphics" aria-label="Grafikqualität wechseln">GRAFIK: AUTO</button>
+  <button id="reset" aria-label="An den Anfang zurückkehren">↺</button>
+ </div>
+</div>
+<footer id="footer" hidden><span>3,6 × 3,6 km · reines 3D-Mesh</span><span id="stats">Modell bereit</span></footer>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

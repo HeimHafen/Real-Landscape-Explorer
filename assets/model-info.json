@@ -1,0 +1,11 @@
+{
+  "type": "procedural_terrain",
+  "identity": "fictional Iceland-inspired volcanic landscape",
+  "worldSizeMeters": 3600.0,
+  "gridSize": 385,
+  "vertices": 148225,
+  "triangles": 361232,
+  "rockObjects": 829,
+  "altitudeMin": 22.0,
+  "altitudeMax": 593.3484497070312
+}
