@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="de"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><meta name="theme-color" content="#14232b">
-<title>Weisse Wand – Real Landscape Explorer</title>
+<title>Weisse Wand – Real Landscape Explorer V2</title>
 <style>
 :root{color-scheme:dark;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#101d26;color:#f5f6ef}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none;touch-action:none}button{font:inherit;cursor:pointer}#world{position:fixed;inset:0;width:100%;height:100%;background:#749aaf;touch-action:none}
 [hidden]{display:none!important}
@@ -12,17 +12,17 @@
 </style></head>
 <body>
 <canvas id="world"></canvas>
-<section id="splash"><div class="inner"><div class="symbol">W</div><div class="label">Real Landscape Explorer · Originalscan</div><h1>Weisse Wand<br>in echtem 3D</h1><div id="status">Bereite den fotografisch rekonstruierten Berg vor …</div><div class="progress"><div id="bar"></div></div><div id="detail">Originales Gelände und Bildtexturen von Shahriar Shahrabi</div><div id="error"></div><button id="enter" class="primary" hidden>Welt betreten</button><button id="retry" class="secondary" hidden>Neu laden</button></div></section>
-<header id="hud" hidden><div><div class="name">WEISSE WAND · 3D</div><div class="sub">Originalmodell · freie Erkundung</div></div><div class="data"><div id="heightText">Höhe im Modell</div><div id="dir">N</div></div></header>
+<section id="splash"><div class="inner"><div class="symbol">W</div><div class="label">Real Landscape Explorer · Originalscan</div><h1>Weisse Wand<br>Originalscan V2</h1><div id="status">Bereite den fotografisch rekonstruierten Berg vor …</div><div class="progress"><div id="bar"></div></div><div id="detail">Originales Gelände und Bildtexturen von Shahriar Shahrabi</div><div id="error"></div><button id="enter" class="primary" hidden>Welt betreten</button><button id="retry" class="secondary" hidden>Neu laden</button></div></section>
+<header id="hud" hidden><div><div class="name">WEISSE WAND · 3D</div><div class="sub">Originalscan · optimierte Nahsicht</div></div><div class="data"><div id="heightText">Höhe im Modell</div><div id="dir">N</div></div></header>
 <div id="dot" hidden>·</div>
-<section id="help" hidden><div class="inner"><div class="label">DEINE ECHTE 3D-LANDSCHAFT</div><h2>Jetzt selbst erkunden</h2><p>Links mit dem Joystick gehen, rechts auf dem Bild wischen, um dich umzusehen. Am Computer: WASD und Mausziehen.</p><p>Mit <b>AUSSICHT</b> wechselst du zur freien Flugkamera. <b>GRAFIK</b> schaltet zwischen den Fotoauflösungen um.</p><p class="warning">Originale Berggeometrie und Fototextur. Der Spielmaßstab ist näherungsweise gewählt, nicht geodätisch exakt nachgewiesen. Geländegrenzen und steile Felswände sind nicht überall begehbar.</p><div class="copyright">© Shahriar Shahrabi · CC BY 4.0 · Quelle: Sketchfab</div><button id="closeHelp" class="primary">Loswandern</button></div></section>
+<section id="help" hidden><div class="inner"><div class="label">DEINE ECHTE 3D-LANDSCHAFT</div><h2>Jetzt selbst erkunden</h2><p>Links mit dem Joystick gehen, rechts auf dem Bild wischen, um dich umzusehen. Am Computer: WASD und Mausziehen.</p><p>Mit <b>AUSSICHT</b> wechselst du zur freien Flugkamera. <b>GRAFIK</b> schaltet zwischen den Fotoauflösungen um.</p><p class="warning">Originale Berggeometrie und Fototextur, ergänzt durch lokale CC0-Nahmaterialien. Steile, instabile oder unvollständig gescannte Stellen sind im Gehmodus gesperrt. Der Spielmaßstab ist näherungsweise gewählt, nicht geodätisch exakt nachgewiesen. Geländegrenzen und steile Felswände sind nicht überall begehbar.</p><div class="copyright">© Shahriar Shahrabi · CC BY 4.0 · Quelle: Sketchfab · Nahmaterialien: CC0</div><button id="closeHelp" class="primary">Loswandern</button></div></section>
 <div id="stick" hidden><div id="thumb"></div></div><div class="controls" id="controls" hidden><button id="viewBtn">AUSSICHT</button><button id="runBtn">LAUFEN</button><button id="qualityBtn">GRAFIK: 2K</button><button id="homeBtn">↺ START</button></div>
-<footer id="foot" hidden><span>Weisse Wand · Originalscan</span><span id="fps">– FPS</span></footer>
+<footer id="foot" hidden><span>Weisse Wand · Scan + Nahdetail</span><span id="fps">– FPS</span></footer>
 <script>
 'use strict';
 const $=id=>document.getElementById(id), canvas=$('world');
-let gl,shader,sky,texture,vao,vertexCount=0,terrainMeta,heights,coverage,run=false,mode='walk',fast=false,eco=false,texMode=2,loopId=0;
-let x=0,z=0,y=0,yaw=.25,pitch=-.11,flyHeight=95;
+let gl,shader,sky,texture,grassTex,rockTex,screeTex,vao,vertexCount=0,terrainMeta,heights,coverage,walkable,run=false,mode='walk',fast=false,eco=false,texMode=2,loopId=0;
+let x=0,z=0,y=0,yaw=.25,pitch=-.06,flyHeight=95;
 const keys=new Set();let joyX=0,joyY=0,movePointer=null,lookPointer=null,lookX=0,lookY=0;let frames=0,frameStart=0,lastTime=0,fps=0;
 const vec=(v)=>`vec3(${v[0].toFixed(7)},${v[1].toFixed(7)},${v[2].toFixed(7)})`;
 const VS=`#version 300 es
@@ -30,61 +30,106 @@ precision highp float;
 layout(location=0) in vec3 aP;
 layout(location=1) in vec3 aN;
 layout(location=2) in vec2 aUV;
+layout(location=3) in float aGap;
 uniform vec3 uMin,uExt,uCamera,uRight,uUp,uForward;
 uniform float uAspect,uTan,uFar;
-out vec2 vUV;out vec3 vN;out float vDist;
-void main(){vec3 pos=uMin+aP*uExt;vec3 delta=pos-uCamera;float px=dot(delta,uRight),py=dot(delta,uUp),pz=dot(delta,uForward);float nearp=.15;float depth=((uFar+nearp)/(uFar-nearp))*pz-(2.*uFar*nearp/(uFar-nearp));gl_Position=vec4(px/(uTan*uAspect),py/uTan,depth,pz);vUV=aUV;vN=aN;vDist=length(delta);}`;
+out vec2 vUV;out vec3 vN,vPos;out float vDist,vGap;
+void main(){vec3 pos=uMin+aP*uExt;vec3 delta=pos-uCamera;float px=dot(delta,uRight),py=dot(delta,uUp),pz=dot(delta,uForward);float nearp=.12;float depth=((uFar+nearp)/(uFar-nearp))*pz-(2.*uFar*nearp/(uFar-nearp));gl_Position=vec4(px/(uTan*uAspect),py/uTan,depth,pz);vUV=aUV;vN=aN;vPos=pos;vDist=length(delta);vGap=aGap;}`;
 const FS=`#version 300 es
 precision highp float;
 precision highp sampler2D;
-in vec2 vUV;in vec3 vN;in float vDist;uniform sampler2D uColor;uniform vec3 uSun,uFog;out vec4 frag;
-void main(){vec3 albedo=texture(uColor,vUV).rgb;vec3 n=normalize(vN);float l=abs(dot(n,normalize(uSun)));vec3 col=albedo*(.77+.26*l);float f=1.-exp(-pow(max(0.,vDist)*.00019,1.28));col=mix(col,uFog,clamp(f,0.,.43));frag=vec4(col,1.);}`;
+in vec2 vUV;in vec3 vN,vPos;in float vDist,vGap;
+uniform sampler2D uColor,uGrass,uRock,uScree;
+uniform vec3 uSun,uFog;
+uniform float uDetail;
+out vec4 frag;
+vec2 projUV(vec3 p,vec3 n){vec3 a=abs(n);if(a.y>=max(a.x,a.z))return p.xz*.32;if(a.x>a.z)return p.zy*.32;return p.xy*.32;}
+void main(){
+ vec3 n=normalize(vN);vec3 photo=texture(uColor,vUV).rgb;
+ vec3 col=photo;
+ if(vDist<155. && uDetail>.5){
+  vec2 uv=projUV(vPos,n);
+  vec3 grass=texture(uGrass,uv).rgb;
+  vec3 rock=texture(uRock,uv).rgb;
+  vec3 scree=texture(uScree,uv).rgb;
+  float greenness=smoothstep(.01,.105,photo.g-photo.r*.93);
+  float grassy=greenness*smoothstep(.31,.78,abs(n.y));
+  float stony=clamp(1.-abs(n.y),0.,1.);
+  vec3 fine=mix(mix(scree,rock,.38+.44*stony),grass,grassy);
+  // Close-up enhancement fades continuously back to the genuine photographic scan.
+  float near=1.-smoothstep(16.,155.,vDist);
+  float fill=near*(.24+.40*vGap);
+  vec3 matchedFine=fine*(.60+photo*.80);
+  col=mix(photo,matchedFine,fill);
+ }
+ float sun=max(0.,dot(n,normalize(uSun)));
+ float light=.82+.18*sun;
+ col*=light;
+ float haze=1.-exp(-pow(max(0.,vDist)*.00014,1.18));
+ col=mix(col,uFog,clamp(haze,0.,.31));
+ frag=vec4(col,1.);
+}`;
 const SKYVS=`#version 300 es
 precision highp float;out vec2 vP;const vec2 p[3]=vec2[3](vec2(-1.,-1.),vec2(3.,-1.),vec2(-1.,3.));void main(){vP=p[gl_VertexID];gl_Position=vec4(vP,0.,1.);}`;
 const SKYFS=`#version 300 es
 precision highp float;
 in vec2 vP;uniform vec3 uRight,uUp,uForward,uSun;uniform float uAspect,uTan;out vec4 frag;
-float noise(vec2 p){return fract(sin(dot(p,vec2(87.3,34.19)))*43758.5453);}
-void main(){vec3 ray=normalize(uForward+uRight*vP.x*uAspect*uTan+uUp*vP.y*uTan);float h=clamp(ray.y*.78+.28,0.,1.);vec3 c=mix(vec3(.76,.82,.84),vec3(.32,.52,.72),pow(h,.8));float s=max(0.,dot(ray,normalize(uSun)));c+=vec3(.9,.75,.54)*pow(s,950.)*.35;frag=vec4(c,1.);}`;
+void main(){vec3 ray=normalize(uForward+uRight*vP.x*uAspect*uTan+uUp*vP.y*uTan);
+ float h=clamp(ray.y*.82+.34,0.,1.);
+ vec3 c=mix(vec3(.78,.84,.86),vec3(.32,.54,.77),pow(h,.86));
+ float s=max(0.,dot(ray,normalize(uSun)));
+ c+=vec3(.95,.79,.55)*pow(s,850.)*.31;
+ frag=vec4(c,1.);}`;
 function compile(type,s){const sh=gl.createShader(type);gl.shaderSource(sh,s);gl.compileShader(sh);if(!gl.getShaderParameter(sh,gl.COMPILE_STATUS)){let e=gl.getShaderInfoLog(sh);gl.deleteShader(sh);throw Error('Grafik-Shader: '+e);}return sh;}
 function program(v,f){const a=compile(gl.VERTEX_SHADER,v),b=compile(gl.FRAGMENT_SHADER,f),p=gl.createProgram();gl.attachShader(p,a);gl.attachShader(p,b);gl.linkProgram(p);gl.deleteShader(a);gl.deleteShader(b);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw Error('Grafikprogramm: '+gl.getProgramInfoLog(p));return p;}
 const U=(p,n)=>gl.getUniformLocation(p,n);
 function progress(text,p){$('status').textContent=text;$('bar').style.width=p+'%'}
 async function getArray(url,onProgress){const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw Error(url+' HTTP '+r.status);if(!r.body||!r.headers.get('content-length'))return await r.arrayBuffer();let chunks=[],size=0,len=Number(r.headers.get('content-length'));const reader=r.body.getReader();for(;;){const {done,value}=await reader.read();if(done)break;chunks.push(value);size+=value.length;onProgress?.(size/len);}const output=new Uint8Array(size);let offset=0;for(const chunk of chunks){output.set(chunk,offset);offset+=chunk.length;}return output.buffer;}
-async function loadTexture(n){const r=await fetch(`./assets/weisse-wand-${n}k.jpg`,{cache:'force-cache'});if(!r.ok)throw Error('Foto-Textur konnte nicht geladen werden');const blob=await r.blob();let image;if('createImageBitmap' in window){image=await createImageBitmap(blob,{imageOrientation:'none'});}else{image=await new Promise((ok,bad)=>{let im=new Image(),url=URL.createObjectURL(blob);im.onload=()=>{URL.revokeObjectURL(url);ok(im)};im.onerror=bad;im.src=url;});}
+async function loadTexture(n){const r=await fetch(`./assets/weisse-wand-${n}k.jpg?v=2`,{cache:'force-cache'});if(!r.ok)throw Error('Foto-Textur konnte nicht geladen werden');const blob=await r.blob();let image;if('createImageBitmap' in window){image=await createImageBitmap(blob,{imageOrientation:'none'});}else{image=await new Promise((ok,bad)=>{let im=new Image(),url=URL.createObjectURL(blob);im.onload=()=>{URL.revokeObjectURL(url);ok(im)};im.onerror=bad;im.src=url;});}
  const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,gl.RGB,gl.UNSIGNED_BYTE,image);gl.generateMipmap(gl.TEXTURE_2D);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);if(image.close)image.close();return t;}
+async function loadDetailTexture(name){
+ const r=await fetch('./assets/'+name+'.jpg?v=2',{cache:'force-cache'});if(!r.ok)throw Error('Nahmaterial fehlt: '+name);
+ let image;if('createImageBitmap' in window){image=await createImageBitmap(await r.blob());}
+ else{image=await new Promise(async(ok,bad)=>{const url=URL.createObjectURL(await r.blob());const im=new Image();im.onload=()=>{URL.revokeObjectURL(url);ok(im)};im.onerror=()=>{URL.revokeObjectURL(url);bad(Error('Bild konnte nicht dekodiert werden'))};im.src=url;});}
+ const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);
+ gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,gl.RGB,gl.UNSIGNED_BYTE,image);
+ gl.generateMipmap(gl.TEXTURE_2D);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);
+ gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+ gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.REPEAT);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.REPEAT);
+ if(image.close)image.close();return t;
+}
 async function initialize(){try{
  progress('Prüfe die 3D-Grafik …',5);gl=canvas.getContext('webgl2',{alpha:false,antialias:false,depth:true,powerPreference:'high-performance'});if(!gl)throw Error('WebGL 2 ist auf diesem Gerät nicht verfügbar.');
  shader=program(VS,FS);sky=program(SKYVS,SKYFS);shader.u={};sky.u={};
- for(let n of ['uMin','uExt','uCamera','uRight','uUp','uForward','uAspect','uTan','uFar','uColor','uSun','uFog'])shader.u[n]=U(shader,n);
+ for(let n of ['uMin','uExt','uCamera','uRight','uUp','uForward','uAspect','uTan','uFar','uColor','uGrass','uRock','uScree','uDetail','uSun','uFog'])shader.u[n]=U(shader,n);
  for(let n of ['uRight','uUp','uForward','uAspect','uTan','uSun'])sky.u[n]=U(sky,n);
- const res=await fetch('./assets/meta.json',{cache:'no-store'});if(!res.ok)throw Error('Modelldaten fehlen. Bitte alle Dateien aus dem ZIP hochladen.');terrainMeta=await res.json();
+ const res=await fetch('./assets/meta.json?v=2',{cache:'no-store'});if(!res.ok)throw Error('Modelldaten fehlen. Bitte alle Dateien aus dem ZIP hochladen.');terrainMeta=await res.json();
  progress('Lade echte Berggeometrie …',14);
- const [vertices,collision,area]=await Promise.all([getArray('./assets/terrain.bin',p=>progress('Lade originale Felsformen …',14+p*50)),getArray('./assets/height.bin'),getArray('./assets/coverage.bin')]);
+ const [vertices,collision,area,walk]=await Promise.all([getArray('./assets/terrain.bin?v=2',p=>progress('Lade originale Felsformen …',14+p*48)),getArray('./assets/height.bin?v=2'),getArray('./assets/coverage.bin?v=2'),getArray('./assets/walkable.bin?v=2')]);
  if(vertices.byteLength%16)throw Error('Die Geometriedatei ist beschädigt.');
- vertexCount=vertices.byteLength/16;heights=new Float32Array(collision);coverage=new Uint8Array(area);if(heights.length!==terrainMeta.grid**2||coverage.length!==heights.length)throw Error('Die Geländekollision ist unvollständig.');
- vao=gl.createVertexArray();gl.bindVertexArray(vao);const buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,vertices,gl.STATIC_DRAW);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,3,gl.UNSIGNED_SHORT,true,16,0);gl.enableVertexAttribArray(1);gl.vertexAttribPointer(1,3,gl.BYTE,true,16,10);gl.enableVertexAttribArray(2);gl.vertexAttribPointer(2,2,gl.UNSIGNED_SHORT,true,16,6);gl.bindVertexArray(null);
- progress('Lade fotografische Original-Oberfläche …',75);texture=await loadTexture(2);
- x=terrainMeta.spawn[0];z=terrainMeta.spawn[1];y=height(x,z)+1.72;
+ vertexCount=vertices.byteLength/16;heights=new Float32Array(collision);coverage=new Uint8Array(area);walkable=new Uint8Array(walk);if(heights.length!==terrainMeta.grid**2||coverage.length!==heights.length||walkable.length!==heights.length)throw Error('Die Geländekollision ist unvollständig.');
+ vao=gl.createVertexArray();gl.bindVertexArray(vao);const buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,vertices,gl.STATIC_DRAW);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,3,gl.UNSIGNED_SHORT,true,16,0);gl.enableVertexAttribArray(1);gl.vertexAttribPointer(1,3,gl.BYTE,true,16,10);gl.enableVertexAttribArray(2);gl.vertexAttribPointer(2,2,gl.UNSIGNED_SHORT,true,16,6);gl.enableVertexAttribArray(3);gl.vertexAttribPointer(3,1,gl.UNSIGNED_BYTE,true,16,13);gl.bindVertexArray(null);
+ progress('Lade fotografische Original-Oberfläche …',75);texture=await loadTexture(2);progress('Bereite natürliche Nahmaterialien vor …',85);[grassTex,rockTex,screeTex]=await Promise.all(['close-grass','close-rock','close-scree'].map(loadDetailTexture));
+ x=terrainMeta.spawn[0];z=terrainMeta.spawn[1];yaw=terrainMeta.spawnYaw??.25;y=height(x,z)+1.72;
  gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.disable(gl.CULL_FACE);gl.disable(gl.BLEND);
- progress('Originalmodell geladen. Bereit zum Wandern.',100);
+ progress('Originalmodell und sichere Wanderzonen geladen.',100);
  $('detail').textContent=`${Math.round(vertexCount/3).toLocaleString('de-DE')} echte 3D-Dreiecke · Original-Fototextur · freies Gehen`;$('enter').hidden=false;
  }catch(e){console.error(e);progress('Die Landschaft konnte nicht gestartet werden.',0);$('error').textContent=String(e.message||e);$('retry').hidden=false;}}
-function height(X,Z){const mn=terrainMeta.min,mx=terrainMeta.max,n=terrainMeta.grid,fx=Math.min(n-1.001,Math.max(0,(X-mn[0])/(mx[0]-mn[0])*(n-1))),fz=Math.min(n-1.001,Math.max(0,(Z-mn[2])/(mx[2]-mn[2])*(n-1))),i=fx|0,j=fz|0,u=fx-i,v=fz-j;const a=heights[j*n+i],b=heights[j*n+i+1],c=heights[(j+1)*n+i],d=heights[(j+1)*n+i+1];return a*(1-u)*(1-v)+b*u*(1-v)+c*(1-u)*v+d*u*v;}
+function height(X,Z){const mn=terrainMeta.min,mx=terrainMeta.max,n=terrainMeta.grid,fx=Math.min(n-1.001,Math.max(0,(X-mn[0])/(mx[0]-mn[0])*(n-1))),fz=Math.min(n-1.001,Math.max(0,(Z-mn[2])/(mx[2]-mn[2])*(n-1))),i=fx|0,j=fz|0,u=fx-i,v=fz-j;const a=heights[j*n+i],b=heights[j*n+i+1],c=heights[(j+1)*n+i],d=heights[(j+1)*n+i+1];if(Math.max(a,b,c,d)-Math.min(a,b,c,d)>9.){return [a,b,c,d][(u>.5?1:0)+(v>.5?2:0)];}return a*(1-u)*(1-v)+b*u*(1-v)+c*(1-u)*v+d*u*v;}
 function basis(){const s=Math.sin(yaw),c=Math.cos(yaw),si=Math.sin(pitch),co=Math.cos(pitch);return {f:[s*co,si,-c*co],r:[c,0,s],u:[-s*si,co,c*si]};}
 function u3(p,loc,a){if(loc!==null)gl.uniform3fv(loc,a)}
 function sceneUniform(p,u,b,aspect,tan){u3(p,u.uRight,b.r);u3(p,u.uUp,b.u);u3(p,u.uForward,b.f);gl.uniform1f(u.uAspect,aspect);gl.uniform1f(u.uTan,tan);u3(p,u.uSun,[.42,.84,-.40]);}
 function draw(){const dpr=Math.min(devicePixelRatio||1,eco?0.82:1.35),w=Math.max(1,Math.floor(innerWidth*dpr)),h=Math.max(1,Math.floor(innerHeight*dpr));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h);}const aspect=w/h,tan=Math.tan((mode==='walk'?70:78)*Math.PI/360),b=basis();
  gl.disable(gl.DEPTH_TEST);gl.depthMask(false);gl.useProgram(sky);sceneUniform(sky,sky.u,b,aspect,tan);gl.drawArrays(gl.TRIANGLES,0,3);
  gl.enable(gl.DEPTH_TEST);gl.depthMask(true);gl.clear(gl.DEPTH_BUFFER_BIT);gl.useProgram(shader);sceneUniform(shader,shader.u,b,aspect,tan);
- u3(shader,shader.u.uMin,terrainMeta.min);u3(shader,shader.u.uExt,terrainMeta.max.map((a,i)=>a-terrainMeta.min[i]));u3(shader,shader.u.uCamera,[x,y,z]);gl.uniform1f(shader.u.uFar,6500);u3(shader,shader.u.uFog,[.69,.76,.79]);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,texture);gl.uniform1i(shader.u.uColor,0);gl.bindVertexArray(vao);gl.drawArrays(gl.TRIANGLES,0,vertexCount);gl.bindVertexArray(null);
+ u3(shader,shader.u.uMin,terrainMeta.min);u3(shader,shader.u.uExt,terrainMeta.max.map((a,i)=>a-terrainMeta.min[i]));u3(shader,shader.u.uCamera,[x,y,z]);gl.uniform1f(shader.u.uFar,6500);u3(shader,shader.u.uFog,[.69,.76,.79]);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,texture);gl.uniform1i(shader.u.uColor,0);for(const [tex,unit,name] of [[grassTex,1,'uGrass'],[rockTex,2,'uRock'],[screeTex,3,'uScree']]){gl.activeTexture(gl.TEXTURE0+unit);gl.bindTexture(gl.TEXTURE_2D,tex);gl.uniform1i(shader.u[name],unit);}gl.uniform1f(shader.u.uDetail,1.);gl.bindVertexArray(vao);gl.drawArrays(gl.TRIANGLES,0,vertexCount);gl.bindVertexArray(null);
 }
-function allowed(nx,nz){let m=terrainMeta.min,M=terrainMeta.max;if(!(nx>m[0]+10&&nx<M[0]-10&&nz>m[2]+10&&nz<M[2]-10))return false;const n=terrainMeta.grid,i=Math.max(0,Math.min(n-1,Math.round((nx-m[0])/(M[0]-m[0])*(n-1)))),j=Math.max(0,Math.min(n-1,Math.round((nz-m[2])/(M[2]-m[2])*(n-1))));return coverage[j*n+i]>0;}
+function allowed(nx,nz){let m=terrainMeta.min,M=terrainMeta.max;if(!(nx>m[0]+10&&nx<M[0]-10&&nz>m[2]+10&&nz<M[2]-10))return false;const n=terrainMeta.grid,i=Math.max(0,Math.min(n-1,Math.round((nx-m[0])/(M[0]-m[0])*(n-1)))),j=Math.max(0,Math.min(n-1,Math.round((nz-m[2])/(M[2]-m[2])*(n-1))));return walkable[j*n+i]>0;}
 function motion(dt){let f=(keys.has('KeyW')||keys.has('ArrowUp')?1:0)-(keys.has('KeyS')||keys.has('ArrowDown')?1:0)-joyY;
 let r=(keys.has('KeyD')||keys.has('ArrowRight')?1:0)-(keys.has('KeyA')||keys.has('ArrowLeft')?1:0)+joyX;let norm=Math.hypot(f,r);if(norm>1){f/=norm;r/=norm;}
 const speed=(mode==='fly'?38:(fast||keys.has('ShiftLeft')?6:3.2));let dx=(Math.sin(yaw)*f+Math.cos(yaw)*r)*speed*dt;let dz=(-Math.cos(yaw)*f+Math.sin(yaw)*r)*speed*dt;
 if(mode==='fly'){x=Math.max(terrainMeta.min[0]+3,Math.min(terrainMeta.max[0]-3,x+dx));z=Math.max(terrainMeta.min[2]+3,Math.min(terrainMeta.max[2]-3,z+dz));let target=height(x,z)+flyHeight;y+=(target-y)*Math.min(1,dt*4);if(keys.has('Space'))flyHeight=Math.min(700,flyHeight+dt*50);if(keys.has('KeyX'))flyHeight=Math.max(8,flyHeight-dt*50);return;}
-let h0=height(x,z);function climbSafe(nx,nz){return allowed(nx,nz)&&height(nx,nz)-h0<Math.max(.22,Math.hypot(dx,dz)*1.3);}if(climbSafe(x+dx,z+dz)){x+=dx;z+=dz;}else{if(climbSafe(x+dx,z))x+=dx;if(climbSafe(x,z+dz))z+=dz;}
+let h0=height(x,z);function climbSafe(nx,nz){return allowed(nx,nz)&&height(nx,nz)-h0<Math.max(.17,Math.hypot(dx,dz)*.90);}if(climbSafe(x+dx,z+dz)){x+=dx;z+=dz;}else{if(climbSafe(x+dx,z))x+=dx;if(climbSafe(x,z+dz))z+=dz;}
 const target=height(x,z)+1.72;y+=(target-y)*Math.min(1,dt*10);
 }
 function frame(time){if(!run)return;const dt=Math.min(.06,(time-lastTime)/1000||.016);lastTime=time;motion(dt);draw();frames++;if(time-frameStart>1100){fps=Math.round(frames*1000/(time-frameStart));frameStart=time;frames=0;$('fps').textContent=fps+' FPS · '+(mode==='walk'?'zu Fuß':'Aussicht');if(fps<26&&!eco){eco=true;$('qualityBtn').textContent='GRAFIK: ECO';}}
@@ -94,8 +139,8 @@ function setJoy(px,py){const max=37,n=Math.hypot(px,py),f=n>max?max/n:1,dx=px*f,
 const stick=$('stick');stick.addEventListener('pointerdown',e=>{movePointer=e.pointerId;stick.setPointerCapture(e.pointerId);stickMove(e);});function stickMove(e){if(e.pointerId!==movePointer)return;let b=stick.getBoundingClientRect();setJoy(e.clientX-b.left-b.width/2,e.clientY-b.top-b.height/2);}stick.addEventListener('pointermove',stickMove);function stickEnd(e){if(e.pointerId===movePointer){movePointer=null;setJoy(0,0);}}stick.addEventListener('pointerup',stickEnd);stick.addEventListener('pointercancel',stickEnd);
 canvas.addEventListener('pointerdown',e=>{if(!$('help').hidden)return;lookPointer=e.pointerId;lookX=e.clientX;lookY=e.clientY;canvas.setPointerCapture(e.pointerId);});canvas.addEventListener('pointermove',e=>{if(e.pointerId!==lookPointer)return;const dx=e.clientX-lookX,dy=e.clientY-lookY;lookX=e.clientX;lookY=e.clientY;yaw+=dx*.0045;pitch=Math.max(-1.35,Math.min(1.35,pitch-dy*.0035));});const endLook=e=>{if(e.pointerId===lookPointer)lookPointer=null;};canvas.addEventListener('pointerup',endLook);canvas.addEventListener('pointercancel',endLook);
 addEventListener('keydown',e=>{if(e.code.startsWith('Arrow')||e.code==='Space')e.preventDefault();keys.add(e.code);if(e.code==='KeyV'&&!e.repeat)toggleView();if(e.code==='KeyR'&&!e.repeat)home();});addEventListener('keyup',e=>keys.delete(e.code));addEventListener('blur',()=>{keys.clear();setJoy(0,0);});
-function toggleView(){if(mode==='walk'){mode='fly';flyHeight=100;y=height(x,z)+flyHeight;pitch=-.40;$('viewBtn').textContent='WANDERN';}else{mode='walk';y=height(x,z)+1.72;pitch=-.12;$('viewBtn').textContent='AUSSICHT';}}
-function home(){x=terrainMeta.spawn[0];z=terrainMeta.spawn[1];y=height(x,z)+(mode==='walk'?1.72:flyHeight);yaw=.25;pitch=mode==='walk'?-.12:-.35;}
+function toggleView(){if(mode==='walk'){mode='fly';flyHeight=100;y=height(x,z)+flyHeight;pitch=-.40;$('viewBtn').textContent='WANDERN';}else{mode='walk';if(!allowed(x,z)){x=terrainMeta.spawn[0];z=terrainMeta.spawn[1];}y=height(x,z)+1.72;pitch=-.08;$('viewBtn').textContent='AUSSICHT';}}
+function home(){x=terrainMeta.spawn[0];z=terrainMeta.spawn[1];y=height(x,z)+(mode==='walk'?1.72:flyHeight);yaw=terrainMeta.spawnYaw??.25;pitch=mode==='walk'?-.06:-.35;}
 $('viewBtn').addEventListener('click',toggleView);$('runBtn').addEventListener('click',()=>{fast=!fast;$('runBtn').textContent=fast?'GEHEN':'LAUFEN';});$('qualityBtn').addEventListener('click',async()=>{if(!gl)return;const btn=$('qualityBtn');btn.disabled=true;const next=texMode===2?4:texMode===4?1:2;try{const t=await loadTexture(next);gl.deleteTexture(texture);texture=t;texMode=next;eco=next===1;btn.textContent='GRAFIK: '+(next===1?'ECO':next+'K');}catch(e){console.error(e);btn.textContent='GRAFIK FEHLER';}finally{btn.disabled=false;}});$('homeBtn').addEventListener('click',home);$('enter').addEventListener('click',begin);$('closeHelp').addEventListener('click',()=>{$('help').hidden=true;});$('retry').addEventListener('click',()=>location.reload());
 initialize();
 </script></body></html>

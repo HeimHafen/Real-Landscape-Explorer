@@ -1,11 +1,7 @@
-# Bild- und Modelldaten / Credits
+# Originalmodelle und Materialien
 
-**Originalwerk:** „Weisse Wand Mountain peek 2517 m 8257 ft“  
-**Urheber:** Shahriar Shahrabi  
-**Quelle:** https://sketchfab.com/3d-models/weisse-wand-mountain-peek-2517-m-8257-ft-cddef5cc80bc4aab8be65b38c29987fa  
-**Lizenz:** Creative Commons Attribution 4.0 (CC BY 4.0)  
-**Lizenztext:** https://creativecommons.org/licenses/by/4.0/
+**Weisse Wand Mountain Peek 2517 m (8257 ft)** — Shahriar Shahrabi — **CC BY 4.0**. Original: https://sketchfab.com/3d-models/weisse-wand-mountain-peek-2517-m-8257-ft-cddef5cc80bc4aab8be65b38c29987fa
 
-**Änderungen für dieses Projekt:** Die Original-GLB wurde aus der Sketchfab-Szenenhierarchie in ein kompaktes 16-Byte-pro-Vertex-Format umgewandelt, die originale fotografische Textur wurde in 1K, 2K und 4K exportiert, die Terrain-Geometrie wurde für eine Browser-Spielwelt ausgerichtet und näherungsweise skaliert, und aus dem Original-Mesh wurde eine Höhenkarte mit Kollision berechnet. Das Modell wurde nicht als eigener realer Fotoscan ausgegeben.
+Die originale Scan-Geometrie und Fototextur sind im Spiel enthalten und wurden für WebGL effizient codiert. Dank und Namensnennung an den Fotografen/Autor. Diese V2 ergänzt optional fotografische Boden-Nahmaterialien (Gras, Fels, Geröll), also eine Bearbeitung des Originals.
 
-Diese Lizenzangabe ist bei öffentlicher Weitergabe und Weiterentwicklung beizubehalten.
+**Nahmaterialien**: Lokale Fototexturen aus dem zuvor bereitgestellten Projekt Burg Eichenfels V0.2, dort als **CC0**-Fotos gekennzeichnet (Gras-Fotografie, Kies-/Fels-Fotografie aus CC0Textures/ambientCG und freier CC0-Grasquelle). Keine externen Laufzeit-Downloads. Falls die Provenienz dieser drei abgeleiteten Einzelbilder für eine öffentliche Weiterverwendung nicht ausreicht, müssen sie vor einer kommerziellen Veröffentlichung mit separat dokumentierten CC0-Originalen ersetzt werden.
