@@ -1,12 +1,12 @@
-/* Real Landscape Explorer V1. Original geometry and offline model loader.
+/* Real Landscape Explorer V2. Original geometry and offline model loader.
    WebGL2, no CDNs, no server routes, no WebGL texture arrays. */
 const $ = id => document.getElementById(id);
 const canvas=$('world');
 const loader=$('loading'),loadtext=$('loadtext'),progress=$('progress'),retry=$('retry'),start=$('start');
 const announce=(message,pct=0)=>{loadtext.textContent=message;progress.style.width=pct+'%';};
-let gl,terrain,rocks,scene,shader,skyProg,skyVao,baseTex,detailTex,worldSize=3600,gridN=385;
-let running=false,mode='walk',eco=false,sprintOn=false,frames=0,fps=0,lastFPS=0,lastFrame=0;
-let pos={x:-180,y:100,z:990},yaw=0.03,pitch=-0.095,airY=0,verticalSpeed=0,grounded=true;
+let gl,terrain,rocks,scene,shader,skyProg,skyVao,baseTex,detailTex,ashTex,normalTex,worldSize=3600,gridN=385;
+let running=false,mode='walk',eco=false,sprintOn=false,frames=0,fps=0,lastFPS=0,lastFrame=0,slowSeconds=0;
+let pos={x:300,y:100,z:180},yaw=0.59,pitch=-0.135,airY=0,verticalSpeed=0,grounded=true;
 const keys=new Set();let joyX=0,joyY=0;let lookPointer=null,lastLookX=0,lastLookY=0;
 const colliders=[];
 const VERT=`#version 300 es
@@ -36,32 +36,64 @@ in vec2 vUV;
 in float vDistance;
 uniform sampler2D uMacro;
 uniform sampler2D uDetail;
-uniform int uIsRock;
+uniform sampler2D uAsh;
+uniform sampler2D uNormal;
+uniform int uIsRock,uEco;
 uniform vec3 uSun,uFog;
 out vec4 outColor;
+vec3 rockPhoto(vec3 p,vec3 n){
+  vec3 an=pow(abs(n),vec3(4.0));an/=max(.0001,an.x+an.y+an.z);
+  vec3 py=texture(uDetail,p.xz*.24).rgb;
+  if(uEco==1)return py;
+  vec3 px=texture(uDetail,p.zy*.24).rgb;
+  vec3 pz=texture(uDetail,p.xy*.24).rgb;
+  return px*an.x+py*an.y+pz*an.z;
+}
+vec3 ashPhoto(vec3 p,vec3 n){
+  vec3 an=pow(abs(n),vec3(4.0));an/=max(.0001,an.x+an.y+an.z);
+  vec3 py=texture(uAsh,p.xz*.22).rgb;
+  if(uEco==1)return py;
+  vec3 px=texture(uAsh,p.zy*.22).rgb;
+  vec3 pz=texture(uAsh,p.xy*.22).rgb;
+  return px*an.x+py*an.y+pz*an.z;
+}
 void main(){
-  vec3 n=normalize(vNormal);
-  float steep=1.0-abs(n.y);
-  vec3 base=(uIsRock==1) ? texture(uDetail,vUV*1.6).rgb : texture(uMacro,vUV).rgb;
-  vec2 uv=vPosition.xz*.21;
-  vec3 micro=texture(uDetail,uv).rgb;
-  // Photographic gravel detail remains visible near the observer; reduced in distant terrain.
-  float detailFactor=(1.0-smoothstep(25.0,270.0,vDistance))*.32;
-  float grain=dot(micro,vec3(.299,.587,.114));
-  base*=mix(1.0,.57+grain*.85,detailFactor);
-  if(uIsRock==0){base=mix(base,base*.86,steep*.44);}
-  vec3 sun=normalize(uSun);
-  float diffuse=max(dot(n,sun),0.0);
-  float light=.48+.60*diffuse;
-  vec3 color=base*light;
-  // Near-view micro-roughness from real photographic image, without blocky normal maps.
-  color*=1.0+.045*(grain-.5);
-  float fog=1.0-exp(-pow(vDistance*.00030,1.65));
-  fog=clamp(fog,0.0,.89);
-  color=mix(color,uFog,fog);
-  // Inputs are authored as sRGB data; keep restrained, daylight-friendly contrast.
-  color=pow(clamp(color,0.0,1.0),vec3(.95));
-  outColor=vec4(color,1.0);
+ vec3 n=normalize(vNormal);
+ if(uIsRock==1){
+   vec3 face=normalize(cross(dFdx(vPosition),dFdy(vPosition)));
+   if(dot(face,n)<0.0) face=-face;
+   n=normalize(mix(n,face,.93));
+ }
+ float steep=1.0-abs(n.y);
+ vec3 photo=rockPhoto(vPosition,n);
+ vec3 dust=ashPhoto(vPosition,n);
+ vec3 base;
+ if(uIsRock==1){
+   base=mix(vec3(.34,.33,.32),vec3(.69,.68,.64),photo)*vec3(.88,.89,.87);
+ }else{
+   vec3 macro=texture(uMacro,vUV).rgb;
+   float dustAmount=clamp(.24 + (macro.r-macro.b)*1.1 +steep*.24,.06,.86);
+   vec3 exposed=mix(photo,dust,dustAmount);
+   vec3 photoMod=vec3(.60)+exposed*1.16;
+   base=macro*photoMod;
+   // Sparse olive weathering / pale mineral shoulders come from macro mask.
+ }
+ vec3 sun=normalize(uSun);
+ // Photograph-sourced micro normal variation: deliberately subtle to avoid plastic terrain.
+ vec3 bump=texture(uNormal,vPosition.xz*.24).rgb*2.0-1.0;
+ float nearby=1.0-smoothstep(65.0,500.0,vDistance);
+ vec3 litNormal=normalize(n+vec3(bump.r*.13,0.0,bump.g*.13)*nearby*(1.-steep*.6));
+ float nd=max(dot(litNormal,sun),0.0);
+ float amb=.64;
+ vec3 color=base*(amb+.56*nd);
+ float rim=pow(clamp(1.-abs(dot(n,sun)),0.,1.),3.);
+ color+=base*rim*.055;
+ // Distance fog: rock detail stays crisp close by; far landscape becomes aerially muted.
+ float distanceFog=1.0-exp(-pow(vDistance*.00032,1.30));
+ float fog=clamp(distanceFog,0.0,.76);
+ color=mix(color,uFog,fog);
+ color=pow(clamp(color,0.0,1.0),vec3(.92));
+ outColor=vec4(color,1.0);
 }`;
 const SKYVERT=`#version 300 es
 precision highp float;
@@ -78,16 +110,15 @@ float hash(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453);}
 float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+1.),f.x),f.y);}
 void main(){
  vec3 ray=normalize(uForward+uRight*(vScreen.x*uTan*uAspect)+uUp*(vScreen.y*uTan));
- float h=clamp(ray.y*.85+.27,0.,1.);
- vec3 horizon=vec3(.62,.71,.76),zenith=vec3(.25,.45,.64);
- vec3 col=mix(horizon,zenith,pow(h,.75));
+ float h=clamp(ray.y*.78+.26,0.,1.);
+ vec3 horizon=vec3(.65,.72,.73),zenith=vec3(.30,.49,.65);
+ vec3 col=mix(horizon,zenith,pow(h,.80));
  float sun=max(dot(ray,normalize(uSun)),0.);
- col+=vec3(.6,.46,.23)*pow(sun,55.)*.14+vec3(1.,.84,.56)*pow(sun,2800.)*.6;
- // Subtle high-altitude cloud veils, only above the horizon.
- vec2 p=ray.xz/(max(.18,ray.y+.2))*2.2;
- float c=.56*noise(p*.8)+.31*noise(p*2.0)+.13*noise(p*5.0);
- float cloud=smoothstep(.53,.77,c)*smoothstep(.03,.3,ray.y)*.18;
- col=mix(col,vec3(.91,.93,.92),cloud);
+ col+=vec3(.69,.52,.29)*pow(sun,50.)*.11+vec3(1.,.86,.66)*pow(sun,2200.)*.55;
+ vec2 p=ray.xz/(max(.20,ray.y+.26))*2.0;
+ float c=.48*noise(p*.69)+.32*noise(p*1.48)+.20*noise(p*3.8);
+ float cloud=smoothstep(.48,.71,c)*smoothstep(.025,.18,ray.y)*.30;
+ col=mix(col,vec3(.84,.87,.87),cloud);
  outColor=vec4(col,1.);
 }`;
 function compile(type,source){
@@ -97,7 +128,7 @@ function compile(type,source){
 }
 function program(v,f){const p=gl.createProgram(),sv=compile(gl.VERTEX_SHADER,v),sf=compile(gl.FRAGMENT_SHADER,f);gl.attachShader(p,sv);gl.attachShader(p,sf);gl.linkProgram(p);gl.deleteShader(sv);gl.deleteShader(sf);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw new Error('Grafikprogramm: '+gl.getProgramInfoLog(p));return p;}
 function uniforms(program,keys){const u={};for(const key of keys)u[key]=gl.getUniformLocation(program,key);return u;}
-const viewKeys=['uCamera','uRight','uUp','uForward','uAspect','uTan','uFar','uSun','uFog','uMacro','uDetail','uIsRock'];
+const viewKeys=['uCamera','uRight','uUp','uForward','uAspect','uTan','uFar','uSun','uFog','uMacro','uDetail','uAsh','uNormal','uIsRock','uEco'];
 const skyKeys=['uRight','uUp','uForward','uAspect','uTan','uSun'];
 function decodeGLB(ab){
  const dv=new DataView(ab);if(dv.getUint32(0,true)!==0x46546c67||dv.getUint32(4,true)!==2)throw new Error('Das Geländemodell ist keine gültige GLB-2.0-Datei.');
@@ -111,7 +142,7 @@ function decodeGLB(ab){
  function attribute(i){const a=json.accessors[i],b=json.bufferViews[a.bufferView];if(a.byteStride||b.byteStride)throw new Error('Nicht unterstütztes GLB-Meshformat.');const p=start+b.byteOffset+(a.byteOffset||0),count=a.count*sizes[a.type];if(a.componentType===5126)return new Float32Array(ab,p,count);if(a.componentType===5125)return new Uint32Array(ab,p,count);if(a.componentType===5123)return new Uint16Array(ab,p,count);throw new Error('Unbekannter GLB-Datentyp.');}
  function mesh(i){const p=json.meshes[i].primitives[0];return {positions:attribute(p.attributes.POSITION),normals:attribute(p.attributes.NORMAL),uv:attribute(p.attributes.TEXCOORD_0),indices:attribute(p.indices)};}
  function imageBlob(i){const im=json.images[i],v=json.bufferViews[im.bufferView];return new Blob([ab.slice(start+v.byteOffset,start+v.byteOffset+v.byteLength)],{type:im.mimeType});}
- return {terrain:mesh(0),rocks:mesh(1),albedo:imageBlob(0),detail:imageBlob(1),meta:json.nodes[0].extras,extras:json.extras||{}};
+ return {terrain:mesh(0),rocks:mesh(1),albedo:imageBlob(0),detail:imageBlob(1),ash:imageBlob(2),normal:imageBlob(3),meta:json.nodes[0].extras,extras:json.extras||{}};
 }
 async function decodeImage(blob){
  if('createImageBitmap' in window){try{return await createImageBitmap(blob);}catch(e){/* Fallback for older Safari builds */}}
@@ -147,12 +178,12 @@ async function load(){
   terrain=gpuMesh(scene.terrain);rocks=gpuMesh(scene.rocks);
   colliders.push(...(scene.extras.boulderColliders||[]));
   announce('Lade die Fotografien für Felsen und Gelände …',85);
-  const [albedo,detail]=await Promise.all([decodeImage(scene.albedo),decodeImage(scene.detail)]);
-  baseTex=texture(albedo);detailTex=texture(detail);
+  const [albedo,detail,ash,normal]=await Promise.all([decodeImage(scene.albedo),decodeImage(scene.detail),decodeImage(scene.ash),decodeImage(scene.normal)]);
+  baseTex=texture(albedo);detailTex=texture(detail);ashTex=texture(ash);normalTex=texture(normal);
   pos.y=height(pos.x,pos.z)+1.74;
   gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.disable(gl.BLEND);gl.disable(gl.CULL_FACE);
   announce('3D-Gelände geladen – bereit zum Wandern.',100);
-  $('loaddetail').textContent='12,96 km² · 2 GLB-Meshes · '+(scene.terrain.indices.length/3+scene.rocks.indices.length/3).toLocaleString('de-DE')+' Dreiecke · offline-Materialien';
+  $('loaddetail').textContent='12,96 km² · 4 Materialebenen · '+(scene.terrain.indices.length/3+scene.rocks.indices.length/3).toLocaleString('de-DE')+' Dreiecke · offline-Materialien';
   start.hidden=false;
  }catch(err){console.error(err);loadtext.textContent='Die 3D-Welt konnte nicht gestartet werden.'; $('loaddetail').textContent=String(err.message||err);progress.style.width='0%';retry.hidden=false;}
 }
@@ -170,10 +201,10 @@ function stepSafe(x,z){
 }
 function cameraBasis(){const c=Math.cos(yaw),s=Math.sin(yaw),p=Math.sin(pitch),cp=Math.cos(pitch);return {f:[s*cp,p,-c*cp],r:[c,0,s],u:[-s*p,cp,c*p]};}
 function uniformScene(p,u,b,aspect,tan){
- gl.uniform3fv(u.uRight,b.r);gl.uniform3fv(u.uUp,b.u);gl.uniform3fv(u.uForward,b.f);gl.uniform1f(u.uAspect,aspect);gl.uniform1f(u.uTan,tan);gl.uniform3fv(u.uSun,[.55,.68,-.32]);
+ gl.uniform3fv(u.uRight,b.r);gl.uniform3fv(u.uUp,b.u);gl.uniform3fv(u.uForward,b.f);gl.uniform1f(u.uAspect,aspect);gl.uniform1f(u.uTan,tan);gl.uniform3fv(u.uSun,[.48,.72,-.38]);
  if(u.uCamera)gl.uniform3f(u.uCamera,pos.x,pos.y+airY,pos.z);
  if(u.uFar)gl.uniform1f(u.uFar,5300);
- if(u.uFog)gl.uniform3f(u.uFog,.62,.70,.73);
+ if(u.uFog)gl.uniform3f(u.uFog,.65,.71,.72);
 }
 function fitCanvas(){const ratio=Math.min(devicePixelRatio||1,eco?0.9:1.45);const w=Math.max(1,Math.floor(innerWidth*ratio)),h=Math.max(1,Math.floor(innerHeight*ratio));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h);}}
 function draw(){
@@ -183,6 +214,9 @@ function draw(){
  gl.useProgram(shader);uniformScene(shader,shader.u,basis,aspect,tan);
  gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,baseTex);gl.uniform1i(shader.u.uMacro,0);
  gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,detailTex);gl.uniform1i(shader.u.uDetail,1);
+ gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,ashTex);gl.uniform1i(shader.u.uAsh,2);
+ gl.activeTexture(gl.TEXTURE3);gl.bindTexture(gl.TEXTURE_2D,normalTex);gl.uniform1i(shader.u.uNormal,3);
+ gl.uniform1i(shader.u.uEco,eco?1:0);
  gl.uniform1i(shader.u.uIsRock,0);gl.bindVertexArray(terrain.vao);gl.drawElements(gl.TRIANGLES,terrain.count,terrain.type,0);
  gl.uniform1i(shader.u.uIsRock,1);gl.bindVertexArray(rocks.vao);gl.drawElements(gl.TRIANGLES,rocks.count,rocks.type,0);
  gl.bindVertexArray(null);
@@ -215,7 +249,7 @@ function motion(dt){
 }
 function render(now){if(!running)return;const dt=Math.min(.05,(now-lastFrame)/1000||.016);lastFrame=now;
  motion(dt);draw();
- frames++;if(now-lastFPS>1000){fps=Math.round(frames*1000/(now-lastFPS));frames=0;lastFPS=now;$('stats').textContent=fps+' FPS · '+(mode==='walk'?'zu Fuß':'Panoramaflug');}
+ frames++;if(now-lastFPS>1000){fps=Math.round(frames*1000/(now-lastFPS));frames=0;lastFPS=now;if(fps<30){slowSeconds++;if(slowSeconds>=5&&!eco){eco=true;$('graphics').textContent='GRAFIK: ECO';}}else slowSeconds=0;$('stats').textContent=fps+' FPS · '+(mode==='walk'?'zu Fuß':'Panoramaflug');}
  const dir=((yaw%(Math.PI*2)+Math.PI*2)%(Math.PI*2))*180/Math.PI;
  const words=['N','NO','O','SO','S','SW','W','NW'];$('compass').textContent=words[Math.round(dir/45)%8];
  $('readout').textContent='Modellhöhe '+Math.round(height(pos.x,pos.z))+' m';
@@ -243,5 +277,5 @@ function setupControls(){
  $('reset').addEventListener('click',reset);
 }
 function toggleMode(){mode=mode==='walk'?'drone':'walk';if(mode==='drone'){pos.y=height(pos.x,pos.z)+115;pitch=-.45;}else{pos.y=height(pos.x,pos.z)+1.74;pitch=-.09;}airY=0;verticalSpeed=0;grounded=true;$('moveMode').textContent=mode==='walk'?'WANDERN':'AUSSICHT';}
-function reset(){pos.x=-180;pos.z=990;pos.y=height(pos.x,pos.z)+(mode==='walk'?1.74:115);pitch=-.095;yaw=.03;airY=0;verticalSpeed=0;grounded=true;}
+function reset(){pos.x=300;pos.z=180;pos.y=height(pos.x,pos.z)+(mode==='walk'?1.74:115);pitch=-.135;yaw=.59;airY=0;verticalSpeed=0;grounded=true;}
 retry.addEventListener('click',()=>location.reload());start.addEventListener('click',showWorld);setupControls();load();

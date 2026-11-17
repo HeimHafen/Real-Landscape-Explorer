@@ -1,51 +1,48 @@
-# Real Landscape Explorer — V1
+# REAL LANDSCAPE EXPLORER – V2: Geologischer Realismus
 
-## Ein neuer Anfang: Nur die Landschaft
+## Was es ist
 
-Dies ist ein **vollständig neues**, eigenständiges GitHub-Pages-Projekt. Es enthält **keine Burg, keine Gebäude und keine Blockfigur**.
+**Komplett neues V2-Landschaftsupdate auf Basis von V1.** Die alte, zusammenhängende 3,6 × 3,6 km Vulkanlandschaft ist erhalten geblieben, ebenso die Touch-/WASD-Steuerung und die frei bewegliche Kamera. Neue Materialzonen und über 5.000 geologisch gruppierte Felsobjekte verbessern die Nah- und Fernwirkung.
 
-**Wichtige Einordnung:** Das 3D-Gelände ist eine *frei gestaltete, von isländischem Vulkanland inspirierte* Landschaft. Es ist **kein 1:1-Scan des Fagradalsfjall** und keine amtliche Geodatendarstellung. Der Maßstab im 3D-Modell ist jedoch echt: **1 Einheit = 1 Meter**.
+**Ehrliche Einordnung:** Die Geländeform ist weiterhin **fiktiv**. Dies ist **kein** 1:1-Laserscan/Fotogrammetrie-Modell von Island. Eine reale Maßstabseinheit entspricht zwar einem Meter, aber geografisch entspricht es keinem realen Ort.
 
-## Inhalt
+## Was neu ist
 
-- `index.html` — **vollständiges, eigenständig startfähiges Spiel**, einschließlich 3D-Gelände, WebGL2-Renderer, Materialien, Touch-Steuerung und Kollisionen. Die Datei allein reicht für GitHub Pages; keine CDNs.
-- `assets/landscape.glb` — das **separate, editierbare GLB-3D-Modell** mit zwei Meshes (Terrain und Felsen), im normalen glTF-2.0-Format. Die Spielversion hat es bereits eingebettet, daher ist das separate GLB für den Spielstart nicht notwendig.
-- `assets/model-info.json` — technische Modellspezifikation.
-- `source/` — modularer Quellcode für spätere Weiterentwicklung. Die `modular-index.html` muss dann ins Root als `index.html` und die beiden Dateien `app.js`, `style.css` neben ihr gelegt werden.
-- `terrain-datenansicht.png` — **topografische Prüfgrafik**, ausdrücklich kein Screenshot aus dem Spiel.
+- 4 Materialebenen: lokale (nicht CDN-abhängige) geologische Farbkarte, echter fotografischer Fels, fotografisches Geröll/Asche und fotografische Normalkarte.
+- Steilhänge werden mit triplanar projizierten Fotos strukturiert (keine gestreckte Textur an Hängen).
+- Aufgelockerte Lava- und mineralische Zonen, feinere Nahoberflächen, trockenes Geröll, spärliche graugrüne Verwitterungszonen.
+- **5.149** unterschiedliche Felsen in unregelmäßigen Ablagerungsfächern, davon 1.050 zusätzlich um den neuen Startbereich, plus breite Ausläufer und vereinzelte größere Felsformationen.
+- Angenehmere Lichtbalance, gedämpfter Dunst, neutralere Wolken und höhere Detailwirkung aus Augenhöhe.
+- Adaptive ECO-Umschaltung nach fünf Sekunden unter 30 FPS. Per Button auch manuell umschaltbar.
+- Kamera startet näher an einer geologisch interessanteren Flanke und blickt in die Kraterlandschaft.
+- `index.html` ist weiterhin ein eigenständig startbares Browser-Spiel mit **vollständig eingebettetem GLB-Modell**, ohne zusätzliche Verzeichnisse und ohne JavaScript-CDN.
 
-## Maße und Steuerung
+## Paket
 
-- Fläche: **3.600 × 3.600 Meter = 12,96 km²**, in einem zusammenhängenden Geländemesh.
-- 148.225 Geländepunkte, 294.912 Gelände-Dreiecke; zusätzlich 829 einzeln modellierte Felsformationen und 66.320 Fels-Dreiecke.
-- Bewegen: **WASD** oder **iPhone-Joystick links**.
-- Umsehen: **Mausziehen** oder **Fingerziehen auf der rechten Bildschirmfläche**.
-- `Shift` oder Schaltfläche **LAUFEN**: schneller gehen; `Leertaste`: springen.
-- **WANDERN / AUSSICHT** oder `V`: zwischen Fußmodus und freier Luftkamera wechseln. Im Luftmodus `Leertaste` = aufwärts und `X` = abwärts.
-- **GRAFIK AUTO / ECO**: reduzierte Bildauflösung, wenn die Bildrate auf dem iPhone sinkt.
-- `R` bzw. `↺`: Startposition.
-- Die Kamera folgt im Fußmodus dem wirklichen Geländeverlauf und hält etwa 1,74 m Augenhöhe.
+- `index.html`: **einzige nötige Datei**, vollständig, für direkten Upload ins GitHub-Repository-Root
+- `assets/landscape.glb`: getrennte editierbare GLB-Datei für spätere Asset-Entwicklung
+- `assets/model-info.json`: Dreieckszahlen, Modellinformation, Herkunft
+- `source/`: Modularversion für Software-Entwicklung (beim eigenen Build `modular-index.html` als `index.html` verwenden und `app.js`, `style.css`, `assets/` gemeinsam hochladen)
 
-## Neues GitHub-Repository erstellen
+## GitHub / Working Copy
 
-1. Auf GitHub ein **neues, leeres, öffentliches Repository** namens `Real-Landscape-Explorer` erstellen.
-2. Die Datei **`index.html` aus diesem ZIP ins Hauptverzeichnis** laden — allein diese Datei genügt zum Spielen.
-3. Optional `README.md` und `assets/landscape.glb` mit hochladen, wenn du die 3D-Originaldatei im Repository aufbewahren willst.
-4. **Settings → Pages → Deploy from a branch → main → /(root) → Save**.
-5. Die URL lautet nach Veröffentlichung (mit deinem bekannten GitHub-Account): `https://heimhafen.github.io/Real-Landscape-Explorer/`.
+1. **V1-Repository behalten**: `Real-Landscape-Explorer`.
+2. `index.html` aus V2 im Stammverzeichnis **überschreiben**, optional `README.md`.
+3. Working Copy Commit → `refs/heads/main` Push, **Force Push aus**.
+4. `https://heimhafen.github.io/Real-Landscape-Explorer/?v=2` öffnen.
+5. Wenn Safari noch V1 zeigt: einmal neu laden, gegebenenfalls Website-Daten/Cache löschen.
 
-**Wichtig:** In der iOS-Dateien-App kann das lokale Öffnen einer HTML-Datei JavaScript blockieren. Für das Spiel den Link über GitHub Pages im Browser öffnen.
+## Wichtige Grenzen
 
-## Qualität und Grenzen
+- Kein garantierter Fotorealismus/AAA-Niveau; die Modelloberfläche verwendet verbesserte fotografische 2D-Materialien, aber keine echte Terrain-Fotogrammetrie.
+- Ein Safari-Test auf dem physischen iPhone wurde aus dieser Umgebung **nicht durchgeführt**; WebGL2-Shader sind syntaktisch vorbereitet, aber die Bildrate kann je nach Hardware stark abweichen.
+- Das eigenständige `index.html` ist groß, weil das gesamte GLB als Base64 eingebettet ist. Bei Ladeproblemen kann die modulare Variante genutzt werden (eigenständiges `assets/landscape.glb`).
+- Grosse 3D-Felsformationen sind nur näherungsweise kollidierend; die Terrainkollision verwendet die echte gerenderte Höhenfläche.
 
-Die Datei ist ein **reales, frei begehbares 3D-Mesh** und keine perspektivische Bildfläche. Materialoberflächen kombinieren lokal mitgelieferte fotografische Mikrotexturen mit prozeduraler Farbgestaltung. Es handelt sich aber **noch nicht um ein fotorealistisches photogrammetrisches Gelände**. Nahaufnahmen, Beleuchtung und Felsgeometrie sind gegenüber AAA-Spielen eingeschränkt. Das Modell ist großflächig und in realen Metern skaliert, **aber seine Formen sind erfunden**.
+## Fototexturen und Rechte
 
-Die 3D-Datei wurde mit trimesh geöffnet und geprüft. JavaScript-Syntax, Paketstruktur und die integrierten Modellbytes wurden getestet. **Eine tatsächliche iPhone-Safari-Bildrate oder WebGL-Grafikaufnahme kann aus dieser Arbeitsumgebung nicht bestätigt werden.** Sollte WebGL2 nicht funktionieren, zeigt die Seite eine konkrete Fehlermeldung statt eines endlosen Ladebildschirms.
+Die fotobasierten Stein- und Normal-Texturen stammen aus den bereits im V1-Projekt verwendeten CC0-Fotomaterialien. Hier wurden sie farblich angepasst und ins GLB eingebettet. Kein fremdes Kartenbild wurde ohne Lizenz übernommen.
 
-## Fotos und Lizenz
+## Ausblick
 
-3D-Geometrie und Programmcode wurden für dieses Projekt erstellt. Die fotografische Felsmikrotextur ist eine bearbeitete CC0-Testbildvorlage aus `scikit-image.data`, abgeleitet aus der im zuvor verwendeten Projekt dokumentierten CC0-Fotovorlage. Kein Markenlogo und keine eingeschränkt lizenzierten Google-Earth- oder Apple-Maps-Bilder sind integriert.
-
-## Später: Echte geografische Geländedaten
-
-Für eine reale 1:1-Landschaft können wir das Terrain durch amtliche DEM-Daten ersetzen, ohne die Bewegungssteuerung grundsätzlich neu zu bauen. Geeignete Quellen sind beispielsweise die Fagradalsfjall-Vermessungen (2021) auf Zenodo, DOI `10.5281/zenodo.6598466`, oder Mapzen Terrain Tiles auf AWS, jeweils mit eigener Lizenzprüfung. Das ist **nicht** Teil von V1.
+Für noch deutlich höheren Realismus brauchen wir als nächstes eine kleine Fokuszone mit **hochaufgelösten photogrammetrischen 3D-Scans oder realen amtlichen Geländedaten**, dazu korrekte natürliche Oberflächen und geprüfte mobile Performance, statt immer mehr generierte Fernlandschaft.
